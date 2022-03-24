@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"synod/api"
 	"synod/conf"
-	"synod/discovery"
 	"syscall"
 )
 
@@ -17,19 +17,12 @@ func main() {
 	quit := make(chan os.Signal)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-	//go func() {
-	//	err := api.Run()
-	//	if err != nil {
-	//		log.Println(err)
-	//	}
-	//}()
+	app := api.NewObject()
 
-	publisher := discovery.NewPublisher("api", "localhost:8000")
-
-	if err := publisher.Publish(); err != nil {
-		log.Println(err)
-	}
+	go func() {
+		app.Run()
+	}()
 
 	<-quit
-	log.Println(publisher.Unpublished())
+	app.Close()
 }
