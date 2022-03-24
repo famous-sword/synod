@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"synod/api"
 	"synod/conf"
 	"synod/discovery"
 	"syscall"
@@ -15,27 +14,22 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	if err := discovery.Startup(); err != nil {
-		log.Fatalln(err)
-	}
-
 	quit := make(chan os.Signal)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-	go func() {
-		err := discovery.StartHeartbeat()
-		if err != nil {
-			log.Println(err)
-		}
-	}()
+	//go func() {
+	//	err := api.Run()
+	//	if err != nil {
+	//		log.Println(err)
+	//	}
+	//}()
 
-	go func() {
-		err := api.Run()
-		if err != nil {
-			log.Println(err)
-		}
-	}()
+	publisher := discovery.NewPublisher("api", "localhost:8000")
+
+	if err := publisher.Publish(); err != nil {
+		log.Println(err)
+	}
 
 	<-quit
-	discovery.Close()
+	log.Println(publisher.Unpublished())
 }
