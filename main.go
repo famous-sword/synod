@@ -17,7 +17,7 @@ func main() {
 	quit := make(chan os.Signal)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-	app := api.NewObject()
+	app := api.NewObjectServer()
 
 	go func() {
 		app.Run()

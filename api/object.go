@@ -17,7 +17,7 @@ var (
 	ErrInvalidAddr = errors.New("invalid addr")
 )
 
-type Object struct {
+type ObjectServer struct {
 	Name       string
 	Addr       string
 	Server     *http.Server
@@ -25,8 +25,8 @@ type Object struct {
 	subscriber *discovery.Subscriber
 }
 
-func NewObject() *Object {
-	obj := &Object{}
+func NewObjectServer() *ObjectServer {
+	obj := &ObjectServer{}
 	obj.Name = "api"
 	obj.Addr = conf.String("api.address")
 
@@ -41,35 +41,37 @@ func NewObject() *Object {
 	return obj
 }
 
-func (o *Object) Run() error {
-	if o.Addr == "" {
+func (s *ObjectServer) Run() error {
+	if s.Addr == "" {
 		return ErrInvalidAddr
 	}
 
-	o.Server.Addr = o.Addr
+	s.Server.Addr = s.Addr
 
-	o.Server.RegisterOnShutdown(func() {
+	s.Server.RegisterOnShutdown(func() {
+		log.Println()
+		
 		var err error
-		if err = o.publisher.Unpublished(); err != nil {
+		if err = s.publisher.Unpublished(); err != nil {
 			log.Println(err)
 		}
-		if err = o.subscriber.Unsubscribe(); err != nil {
+		if err = s.subscriber.Unsubscribe(); err != nil {
 			log.Println(err)
 		}
 	})
 
-	o.publisher = discovery.NewPublisher(o.Name, o.Addr)
-	o.publisher.Publish()
-	// o.subscriber = discovery.NewSubscriber("")
+	s.publisher = discovery.NewPublisher(s.Name, s.Addr)
+	s.publisher.Publish()
+	// s.subscriber = discovery.NewSubscriber("")
 
-	return o.Server.ListenAndServe()
+	return s.Server.ListenAndServe()
 }
 
-func (o *Object) Close() {
-	o.Server.Shutdown(context.TODO())
+func (s *ObjectServer) Close() {
+	s.Server.Shutdown(context.TODO())
 }
 
-func (o *Object) putObject(ctx *gin.Context) {
+func (s *ObjectServer) putObject(ctx *gin.Context) {
 	path := ctx.Param("path")
 
 	if path == "" {
@@ -102,7 +104,7 @@ func (o *Object) putObject(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"written": written})
 }
 
-func (o *Object) loadObject(ctx *gin.Context) {
+func (s *ObjectServer) loadObject(ctx *gin.Context) {
 	path := ctx.Param("path")
 
 	if path == "" {
