@@ -5,28 +5,42 @@ import (
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	etcd "go.etcd.io/etcd/client/v3"
 	"log"
-	"sync"
 )
 
 type Subscriber struct {
-	cli     *etcd.Client
-	nodes   sync.Map
-	name    string
-	online  int
-	offline int
+	cli       *etcd.Client
+	names     []string
+	endpoints map[string]*container
+	online    int
+	offline   int
 }
 
-func NewSubscriber(name string) *Subscriber {
+func NewSubscriber(names ...string) *Subscriber {
 	return &Subscriber{
-		cli:     Registry(),
-		name:    name,
-		online:  0,
-		offline: 0,
+		cli:       Registry(),
+		names:     names,
+		endpoints: make(map[string]*container, len(names)),
+		online:    0,
+		offline:   0,
 	}
 }
 
-func (s *Subscriber) Subscribe() error {
-	loaded, err := s.cli.Get(context.TODO(), forSubscribe(s.name), etcd.WithPrefix())
+func (s *Subscriber) Subscribe() (err error) {
+	for _, name := range s.names {
+		if err = s.subscribe(name); err != nil {
+			return err
+		}
+
+		go func(n string) {
+			s.listen(n)
+		}(name)
+	}
+
+	return err
+}
+
+func (s *Subscriber) subscribe(name string) error {
+	loaded, err := s.cli.Get(context.TODO(), forSubscribe(name), etcd.WithPrefix())
 
 	if err != nil {
 		return err
@@ -36,29 +50,28 @@ func (s *Subscriber) Subscribe() error {
 		key := string(kv.Key)
 		node := string(kv.Value)
 		if node != "" {
-			s.addNode(key, node)
+			s.addNode(name, key, node)
 			log.Printf("add node from loading: %s => %s\n", key, node)
 		}
 	}
 
-	go func() {
-		s.listen()
-	}()
-
 	return nil
 }
 
-func (s *Subscriber) Next() string {
-	// todo
-	return ""
+func (s *Subscriber) Next(name string) string {
+	if _, ok := s.endpoints[name]; !ok {
+		return ""
+	}
+
+	return s.endpoints[name].random()
 }
 
 func (s *Subscriber) Unsubscribe() error {
 	return s.cli.Close()
 }
 
-func (s *Subscriber) listen() {
-	watcher := s.cli.Watch(context.TODO(), forSubscribe(s.name), etcd.WithPrefix())
+func (s *Subscriber) listen(name string) {
+	watcher := s.cli.Watch(context.TODO(), forSubscribe(name), etcd.WithPrefix())
 
 	for action := range watcher {
 		for _, event := range action.Events {
@@ -68,10 +81,10 @@ func (s *Subscriber) listen() {
 				switch event.Type {
 				case mvccpb.PUT:
 					addr := string(event.Kv.Value)
-					s.addNode(key, addr)
+					s.addNode(name, key, addr)
 					log.Printf("add node from listening: %s => %s\n", key, addr)
 				case mvccpb.DELETE:
-					s.removeNode(key)
+					s.removeNode(name, key)
 					log.Printf("remove node from listening: %s\n", key)
 				}
 			}
@@ -79,12 +92,20 @@ func (s *Subscriber) listen() {
 	}
 }
 
-func (s *Subscriber) addNode(key, addr string) {
-	s.nodes.Store(key, addr)
+func (s *Subscriber) addNode(name, key, addr string) {
+	if _, ok := s.endpoints[name]; !ok {
+		s.endpoints[name] = newContainer()
+	}
+
+	s.endpoints[name].add(key, addr)
 	s.online++
 }
 
-func (s *Subscriber) removeNode(key string) {
-	s.nodes.Delete(key)
+func (s *Subscriber) removeNode(name, key string) {
+	if _, ok := s.endpoints[name]; !ok {
+		s.endpoints[name] = newContainer()
+	}
+
+	s.endpoints[name].remove(key)
 	s.offline++
 }

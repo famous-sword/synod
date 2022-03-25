@@ -50,7 +50,7 @@ func (s *ObjectServer) Run() error {
 
 	s.Server.RegisterOnShutdown(func() {
 		log.Println()
-		
+
 		var err error
 		if err = s.publisher.Unpublished(); err != nil {
 			log.Println(err)

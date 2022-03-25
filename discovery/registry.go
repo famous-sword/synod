@@ -16,7 +16,7 @@ var (
 func Registry() *etcd.Client {
 	once.Do(func() {
 		cli, err := etcd.New(etcd.Config{
-			Endpoints:   conf.StringSlice("etcd.endpoints"),
+			Endpoints:   conf.StringSlice("etcd.values"),
 			DialTimeout: 2 * time.Second,
 			TLS:         nil,
 			Username:    conf.String("etcd.username"),
