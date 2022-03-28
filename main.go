@@ -1,28 +1,20 @@
 package main
 
 import (
+	"github.com/spf13/cobra"
 	"log"
-	"os"
-	"os/signal"
-	"synod/api"
-	"synod/conf"
-	"syscall"
+	"synod/cmd"
 )
 
 func main() {
-	if err := conf.Startup(); err != nil {
-		log.Fatalln(err)
+	root := &cobra.Command{
+		Use:   "synod",
+		Short: "Simple distributed object storage system",
 	}
 
-	quit := make(chan os.Signal)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	root.AddCommand(cmd.RunCommand())
 
-	app := api.NewObjectServer()
-
-	go func() {
-		app.Run()
-	}()
-
-	<-quit
-	app.Close()
+	if err := root.Execute(); err != nil {
+		log.Println(err)
+	}
 }

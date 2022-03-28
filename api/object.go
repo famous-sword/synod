@@ -47,9 +47,12 @@ func (s *ObjectServer) Run() error {
 	}
 
 	s.Server.Addr = s.Addr
+	s.publisher = discovery.NewPublisher(s.Name, s.Addr)
+	s.publisher.Publish()
+	s.subscriber = discovery.NewSubscriber("storage")
 
 	s.Server.RegisterOnShutdown(func() {
-		log.Println()
+		log.Println("on shutdown...")
 
 		var err error
 		if err = s.publisher.Unpublished(); err != nil {
@@ -59,10 +62,6 @@ func (s *ObjectServer) Run() error {
 			log.Println(err)
 		}
 	})
-
-	s.publisher = discovery.NewPublisher(s.Name, s.Addr)
-	s.publisher.Publish()
-	// s.subscriber = discovery.NewSubscriber("")
 
 	return s.Server.ListenAndServe()
 }
