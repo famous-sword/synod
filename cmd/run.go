@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"synod/api"
 	"synod/conf"
+	"synod/storage"
 )
 
 var apiService *api.ObjectServer
@@ -35,7 +36,16 @@ func RunCommand() *cobra.Command {
 		},
 	}
 
-	runner.AddCommand(api)
+	storage := &cobra.Command{
+		Use:   "storage",
+		Short: "run storage service",
+		Run: func(cmd *cobra.Command, args []string) {
+			svc := storage.NewLocalStorage()
+			svc.Run()
+		},
+	}
+
+	runner.AddCommand(api, storage)
 
 	return runner
 }

@@ -11,10 +11,11 @@ import (
 	"path/filepath"
 	"synod/conf"
 	"synod/discovery"
+	"synod/render"
 )
 
 var (
-	ErrInvalidAddr = errors.New("invalid addr")
+	ErrInvalidAddr                   = errors.New("invalid addr")
 )
 
 type ObjectServer struct {
@@ -74,18 +75,14 @@ func (s *ObjectServer) putObject(ctx *gin.Context) {
 	path := ctx.Param("path")
 
 	if path == "" {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "invalid file path",
-		})
+		render.Fail().WithMessage("invalid path").To(ctx)
 		return
 	}
 
 	file, err := os.Create(diskPath(path))
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
+		render.Fail().WithError(err).To(ctx)
 		return
 	}
 
@@ -94,9 +91,7 @@ func (s *ObjectServer) putObject(ctx *gin.Context) {
 	written, err := io.Copy(file, ctx.Request.Body)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
+		render.Fail().WithError(err).To(ctx)
 		return
 	}
 
@@ -107,18 +102,14 @@ func (s *ObjectServer) loadObject(ctx *gin.Context) {
 	path := ctx.Param("path")
 
 	if path == "" {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "invalid file path",
-		})
+		render.Fail().WithMessage("invalid path").To(ctx)
 		return
 	}
 
 	binary, err := os.Open(diskPath(path))
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-		})
+		render.Fail().WithError(err).To(ctx)
 		return
 	}
 
