@@ -48,8 +48,8 @@ func (p *Publisher) keepalive() (err error) {
 	}
 
 	go func() {
-		for heartbeat := range p.heartbeat {
-			log.Printf("%s leased renew: %v\n", p.name, heartbeat.ID)
+		for _ = range p.heartbeat {
+			// log.Printf("%s leased renew: %v\n", p.name, heartbeat.ID)
 		}
 	}()
 
