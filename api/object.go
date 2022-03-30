@@ -1,80 +1,17 @@
 package api
 
 import (
-	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 	"io"
-	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 	"synod/conf"
-	"synod/discovery"
 	"synod/render"
+	"synod/streams"
 )
 
-var (
-	ErrInvalidAddr = errors.New("invalid addr")
-)
-
-type ObjectServer struct {
-	Name       string
-	Addr       string
-	Server     *http.Server
-	publisher  *discovery.Publisher
-	subscriber *discovery.Subscriber
-}
-
-func NewObjectServer() *ObjectServer {
-	obj := &ObjectServer{}
-	obj.Name = "api"
-	obj.Addr = conf.String("api.addr")
-
-	handler := gin.Default()
-	handler.GET("/objects/*path", obj.loadObject)
-	handler.PUT("/objects/*path", obj.putObject)
-	handler.GET("/locates/*path", obj.locate)
-
-	obj.Server = &http.Server{
-		Handler: handler,
-	}
-
-	return obj
-}
-
-func (s *ObjectServer) Run() error {
-	if s.Addr == "" {
-		return ErrInvalidAddr
-	}
-
-	s.Server.Addr = s.Addr
-	s.publisher = discovery.NewPublisher(s.Name, s.Addr)
-	s.publisher.Publish()
-	s.subscriber = discovery.NewSubscriber("storage")
-
-	s.Server.RegisterOnShutdown(func() {
-		log.Println("on shutdown...")
-
-		var err error
-		if err = s.publisher.Unpublished(); err != nil {
-			log.Println(err)
-		}
-		if err = s.subscriber.Unsubscribe(); err != nil {
-			log.Println(err)
-		}
-	})
-
-	s.subscriber.Subscribe()
-
-	return s.Server.ListenAndServe()
-}
-
-func (s *ObjectServer) Close() {
-	s.Server.Shutdown(context.TODO())
-}
-
-func (s *ObjectServer) putObject(ctx *gin.Context) {
+func (s *RESTServer) putObject(ctx *gin.Context) {
 	path := ctx.Param("path")
 
 	if path == "" {
@@ -82,26 +19,32 @@ func (s *ObjectServer) putObject(ctx *gin.Context) {
 		return
 	}
 
-	file, err := os.Create(diskPath(path))
+	peer := s.subscriber.PickPeer("storage", path)
 
-	if err != nil {
-		render.Fail().WithError(err).To(ctx)
+	if peer == "" {
+		render.Fail().WithMessage("no peer available").To(ctx)
 		return
 	}
 
-	defer file.Close()
+	to := fmt.Sprintf("http://%s/objects%s", peer, path)
 
-	written, err := io.Copy(file, ctx.Request.Body)
+	stream := streams.NewPutStream(to)
 
-	if err != nil {
-		render.Fail().WithError(err).To(ctx)
+	io.Copy(stream, ctx.Request.Body)
+
+	if err := stream.Close(); err != nil {
+		render.OfError(err).To(ctx)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"written": written})
+	r := gin.H{
+		"put": to,
+	}
+
+	render.Success().With(r).To(ctx)
 }
 
-func (s *ObjectServer) loadObject(ctx *gin.Context) {
+func (s *RESTServer) loadObject(ctx *gin.Context) {
 	path := ctx.Param("path")
 
 	if path == "" {

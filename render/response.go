@@ -20,6 +20,12 @@ func Success() *Response {
 	return &Response{}
 }
 
+func OfError(err error) *Response {
+	r := Fail().WithError(err)
+
+	return r
+}
+
 func (r *Response) WithStatus(status int) *Response {
 	r.Status = status
 

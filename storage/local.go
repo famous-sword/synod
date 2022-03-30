@@ -2,9 +2,13 @@ package storage
 
 import (
 	"github.com/gin-gonic/gin"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"synod/conf"
 	"synod/discovery"
+	"synod/render"
 )
 
 type LocalStorage struct {
@@ -25,6 +29,8 @@ func (s *LocalStorage) Run() error {
 	s.Addr = conf.String("storage.addr")
 
 	handler := gin.Default()
+	handler.GET("/objects/*path", s.loadObject)
+	handler.PUT("/objects/*path", s.putObject)
 
 	server := &http.Server{
 		Addr:    s.Addr,
@@ -43,4 +49,56 @@ func (s *LocalStorage) Run() error {
 	})
 
 	return s.Server.ListenAndServe()
+}
+
+func (s *LocalStorage) putObject(ctx *gin.Context) {
+	path := ctx.Param("path")
+
+	if path == "" {
+		render.Fail().WithMessage("invalid path").To(ctx)
+		return
+	}
+
+	file, err := os.Create(diskPath(path))
+
+	if err != nil {
+		render.Fail().WithError(err).To(ctx)
+		return
+	}
+
+	defer file.Close()
+
+	written, err := io.Copy(file, ctx.Request.Body)
+
+	if err != nil {
+		render.Fail().WithError(err).To(ctx)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"written": written})
+}
+
+func (s *LocalStorage) loadObject(ctx *gin.Context) {
+	path := ctx.Param("path")
+
+	if path == "" {
+		render.Fail().WithMessage("invalid path").To(ctx)
+		return
+	}
+
+	binary, err := os.Open(diskPath(path))
+
+	if err != nil {
+		render.Fail().WithError(err).To(ctx)
+		return
+	}
+
+	defer binary.Close()
+
+	io.Copy(ctx.Writer, binary)
+}
+
+func diskPath(path string) string {
+	disk := conf.String("storage.local")
+	return filepath.Join(disk, path)
 }

@@ -5,7 +5,7 @@ import (
 	"synod/render"
 )
 
-func (s *ObjectServer) locate(ctx *gin.Context) {
+func (s *RESTServer) locate(ctx *gin.Context) {
 	path := ctx.Param("path")
 
 	if path == "" {
@@ -20,5 +20,9 @@ func (s *ObjectServer) locate(ctx *gin.Context) {
 		return
 	}
 
-	render.Success().With(addr).To(ctx)
+	r := gin.H{
+		"peer": addr,
+	}
+
+	render.Success().With(r).To(ctx)
 }
