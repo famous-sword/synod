@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
-	"os"
-	"path/filepath"
-	"synod/conf"
 	"synod/render"
 	"synod/streams"
 )
@@ -52,19 +49,21 @@ func (s *RESTServer) loadObject(ctx *gin.Context) {
 		return
 	}
 
-	binary, err := os.Open(diskPath(path))
+	peer := s.subscriber.PickPeer("storage", path)
 
-	if err != nil {
-		render.Fail().WithError(err).To(ctx)
+	if peer == "" {
+		render.Fail().WithMessage("no peer available").To(ctx)
 		return
 	}
 
-	defer binary.Close()
+	from := fmt.Sprintf("http://%s/objects%s", peer, path)
 
-	io.Copy(ctx.Writer, binary)
-}
+	stream, err := streams.NewFetchStream(from)
 
-func diskPath(path string) string {
-	disk := conf.String("storage.local")
-	return filepath.Join(disk, path)
+	if err != nil {
+		render.OfError(err).To(ctx)
+		return
+	}
+
+	io.Copy(ctx.Writer, stream)
 }

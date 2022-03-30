@@ -21,7 +21,7 @@ func NewPutStream(target string) *PutStream {
 		r, err := client.Do(request)
 
 		if err == nil && r.StatusCode != http.StatusOK {
-			err = fmt.Errorf("%s return http code %d", r.StatusCode)
+			err = fmt.Errorf("%s responsed status code: %d", target, r.StatusCode)
 		}
 		e <- err
 	}()
