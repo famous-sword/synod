@@ -1,11 +1,12 @@
 app:
-  id: synod-1
+  id: 1
   debug: true
   env: dev
 storage:
+  addr: 127.0.0.1:5566
   local: /Users/fatrbaby/workspaces/golang/synod/var/disk
 api:
-  address: 127.0.0.1:5555
+  addr: 127.0.0.1:5555
 etcd:
   dialTimeout: 2
   endpoints:

@@ -5,13 +5,20 @@ import (
 	"synod/render"
 )
 
-func (s *ObjectServer) Locate(ctx *gin.Context) {
-	addr := s.subscriber.Next("storage")
+func (s *ObjectServer) locate(ctx *gin.Context) {
+	path := ctx.Param("path")
+
+	if path == "" {
+		render.Fail().WithMessage("path is invalid").To(ctx)
+		return
+	}
+
+	addr := s.subscriber.PickPeer("storage", path)
 
 	if addr == "" {
 		render.Fail().WithMessage("no storage service available").To(ctx)
 		return
 	}
 
-	render.Success().To(ctx)
+	render.Success().With(addr).To(ctx)
 }

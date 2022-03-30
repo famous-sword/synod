@@ -16,16 +16,26 @@ type Subscriber struct {
 }
 
 func NewSubscriber(names ...string) *Subscriber {
-	return &Subscriber{
+	subscriber := &Subscriber{
 		cli:       Registry(),
 		names:     names,
 		endpoints: make(map[string]*container, len(names)),
 		online:    0,
 		offline:   0,
 	}
+
+	for _, name := range names {
+		subscriber.endpoints[name] = newContainer()
+	}
+
+	return subscriber
 }
 
 func (s *Subscriber) Subscribe() (err error) {
+	for _, endpoint := range s.endpoints {
+		endpoint.listenUpdates()
+	}
+
 	for _, name := range s.names {
 		if err = s.subscribe(name); err != nil {
 			return err
@@ -58,12 +68,12 @@ func (s *Subscriber) subscribe(name string) error {
 	return nil
 }
 
-func (s *Subscriber) Next(name string) string {
+func (s *Subscriber) PickPeer(name, key string) string {
 	if _, ok := s.endpoints[name]; !ok {
 		return ""
 	}
 
-	return s.endpoints[name].random()
+	return s.endpoints[name].next(key)
 }
 
 func (s *Subscriber) Unsubscribe() error {

@@ -34,6 +34,8 @@ func (s *LocalStorage) Run() error {
 	s.Server = server
 	s.publisher = discovery.NewPublisher(s.Name, s.Addr)
 	s.subscriber = discovery.NewSubscriber("api")
+
+	s.publisher.Publish()
 	s.subscriber.Subscribe()
 
 	s.Server.RegisterOnShutdown(func() {

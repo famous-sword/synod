@@ -1,9 +1,12 @@
 package discovery
 
 import (
-	"math/rand"
+	"log"
 	"sync"
+	"synod/discovery/lb"
 )
+
+var DefaultReplicas = 11
 
 type container struct {
 	keys    []string
@@ -11,49 +14,67 @@ type container struct {
 	indexes map[string]int
 	cursor  int
 	mux     sync.RWMutex
+
+	changed  chan int
+	balancer *lb.Map
 }
 
 func newContainer() *container {
 	return &container{
-		keys:    make([]string, 0),
-		values:  make([]string, 0),
-		indexes: make(map[string]int, 0),
+		keys:     make([]string, 0),
+		values:   make([]string, 0),
+		indexes:  make(map[string]int, 0),
+		balancer: lb.New(DefaultReplicas, nil),
+
+		changed: make(chan int),
 	}
 }
 
-func (c *container) add(key, value string) {
+func (c *container) add(name, value string) {
 	c.mux.Lock()
-	c.keys = append(c.keys, key)
+	c.keys = append(c.keys, name)
 	c.values = append(c.values, value)
-	c.indexes[key] = c.cursor
+	c.indexes[name] = c.cursor
 	c.cursor++
 	c.mux.Unlock()
+
+	c.changed <- c.cursor
 }
 
-func (c *container) get(key string) string {
-	if index, ok := c.indexes[key]; ok {
+func (c *container) get(name string) string {
+	if index, ok := c.indexes[name]; ok {
 		return c.values[index]
 	}
 
 	return ""
 }
 
-func (c *container) remove(key string) {
+func (c *container) remove(name string) {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 
-	if index, ok := c.indexes[key]; ok {
+	if index, ok := c.indexes[name]; ok {
 		c.keys = append(c.keys[:index], c.keys[index+1:]...)
 		c.values = append(c.values[:index], c.values[index+1:]...)
-		delete(c.indexes, key)
+		delete(c.indexes, name)
 		c.cursor--
 	}
+
+	c.changed <- c.cursor
 }
 
-func (c *container) random() string {
-	if c.cursor <= 0 {
-		return ""
-	}
+func (c *container) next(key string) string {
+	return c.balancer.Get(key)
+}
 
-	return c.values[rand.Intn(c.cursor)]
+func (c *container) listenUpdates() {
+	go func() {
+		for {
+			select {
+			case <-c.changed:
+				c.balancer.Add(c.values...)
+				log.Println("refresh load balancer peers...")
+			}
+		}
+	}()
 }

@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	ErrInvalidAddr                   = errors.New("invalid addr")
+	ErrInvalidAddr = errors.New("invalid addr")
 )
 
 type ObjectServer struct {
@@ -29,11 +29,12 @@ type ObjectServer struct {
 func NewObjectServer() *ObjectServer {
 	obj := &ObjectServer{}
 	obj.Name = "api"
-	obj.Addr = conf.String("api.address")
+	obj.Addr = conf.String("api.addr")
 
 	handler := gin.Default()
 	handler.GET("/objects/*path", obj.loadObject)
 	handler.PUT("/objects/*path", obj.putObject)
+	handler.GET("/locates/*path", obj.locate)
 
 	obj.Server = &http.Server{
 		Handler: handler,
@@ -63,6 +64,8 @@ func (s *ObjectServer) Run() error {
 			log.Println(err)
 		}
 	})
+
+	s.subscriber.Subscribe()
 
 	return s.Server.ListenAndServe()
 }
