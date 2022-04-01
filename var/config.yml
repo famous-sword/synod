@@ -11,3 +11,7 @@ etcd:
   dialTimeout: 2
   endpoints:
     - 127.0.0.1:2379
+meta:
+  use: es
+  elasticsearch:
+    endpoint: http://127.0.0.1:9200

@@ -32,3 +32,9 @@ func Registry() *etcd.Client {
 
 	return client
 }
+
+func Shutdown() {
+	if client != nil {
+		client.Close()
+	}
+}

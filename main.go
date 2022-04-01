@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"log"
 	"synod/cmd"
+	"synod/discovery"
 )
 
 func main() {
@@ -17,4 +18,6 @@ func main() {
 	if err := root.Execute(); err != nil {
 		log.Println(err)
 	}
+
+	discovery.Shutdown()
 }
