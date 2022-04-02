@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// PutStream used to put objects to other service
 type PutStream struct {
 	writer *io.PipeWriter
 	err    chan error

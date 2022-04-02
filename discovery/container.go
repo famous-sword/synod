@@ -8,14 +8,22 @@ import (
 
 var DefaultReplicas = 11
 
+// container store service information of a service
+// every server has each container
 type container struct {
+	// service names
 	keys    []string
+	// service addr
 	values  []string
+	// index of service name
 	indexes map[string]int
+	// current index
 	cursor  int
 	mux     sync.RWMutex
 
+	// event of service online or offline
 	changed  chan int
+	// loading balancer for pick peer of service
 	balancer *lb.Map
 }
 
@@ -67,6 +75,7 @@ func (c *container) next(key string) string {
 	return c.balancer.Get(key)
 }
 
+// listenUpdates when service changed, load balancer reload
 func (c *container) listenUpdates() {
 	go func() {
 		for {

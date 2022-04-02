@@ -5,6 +5,7 @@ import (
 	"synod/render"
 )
 
+// confirm object in which storage service
 func (s *RESTServer) locate(ctx *gin.Context) {
 	path := ctx.Param("path")
 

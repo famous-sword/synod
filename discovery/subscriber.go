@@ -7,6 +7,7 @@ import (
 	"log"
 )
 
+// Subscriber to subscribe service of service dependencies
 type Subscriber struct {
 	cli       *etcd.Client
 	names     []string
@@ -68,6 +69,7 @@ func (s *Subscriber) subscribe(name string) error {
 	return nil
 }
 
+// PickPeer select one peer from multiple peers
 func (s *Subscriber) PickPeer(name, key string) string {
 	if _, ok := s.endpoints[name]; !ok {
 		return ""
@@ -80,6 +82,7 @@ func (s *Subscriber) Unsubscribe() error {
 	return s.cli.Close()
 }
 
+// listen to service online or offline
 func (s *Subscriber) listen(name string) {
 	watcher := s.cli.Watch(context.TODO(), forSubscribe(name), etcd.WithPrefix())
 

@@ -26,43 +26,6 @@ type (
 	}
 )
 
-func (c *ElasticMetaManager) LatestVersion(name string) (meta Meta, err error) {
-	u := c.getUrlBuilder("_search")
-
-	queries := url.Values{}
-	queries.Add("name", name)
-	queries.Add("size", "1")
-	queries.Add("sort", "version:desc")
-
-	u.RawQuery = queries.Encode()
-
-	response, err := http.Get(u.String())
-
-	if err != nil {
-		return
-	}
-
-	if response.StatusCode != http.StatusOK {
-		err = fmt.Errorf("fail to ger latest version by responsed %d", response.StatusCode)
-		return
-	}
-
-	body, _ := ioutil.ReadAll(response.Body)
-	var r searched
-
-	err = json.Unmarshal(body, &r)
-
-	if err != nil {
-		return
-	}
-
-	if len(r.Hits.Hits) != 0 {
-		meta = r.Hits.Hits[0].Source
-	}
-
-	return
-}
-
 func (c *ElasticMetaManager) Get(name string, version int) (Meta, error) {
 	if version == 0 {
 		return c.LatestVersion(name)
@@ -110,14 +73,12 @@ func (c *ElasticMetaManager) Put(name string, version int, size int64, hash stri
 	return nil
 }
 
-func (c *ElasticMetaManager) AddVersion(name, hash string, size int64) error {
-	meta, err := c.LatestVersion(name)
+func (c *ElasticMetaManager) Remove(name string, version int) {
+	u := c.getUrlBuilder(makeMetaDocName(name, version))
+	request, _ := http.NewRequest("DELETE", u.String(), nil)
+	client := &http.Client{}
 
-	if err != nil {
-		return err
-	}
-
-	return c.Put(name, meta.Version+1, size, hash)
+	_, _ = client.Do(request)
 }
 
 func (c *ElasticMetaManager) Versions(name string, from, size int64) ([]Meta, error) {
@@ -160,12 +121,51 @@ func (c *ElasticMetaManager) Versions(name string, from, size int64) ([]Meta, er
 	return metas, nil
 }
 
-func (c *ElasticMetaManager) Remove(name string, version int) {
-	u := c.getUrlBuilder(makeMetaDocName(name, version))
-	request, _ := http.NewRequest("DELETE", u.String(), nil)
-	client := &http.Client{}
+func (c *ElasticMetaManager) AddVersion(name, hash string, size int64) error {
+	meta, err := c.LatestVersion(name)
 
-	_, _ = client.Do(request)
+	if err != nil {
+		return err
+	}
+
+	return c.Put(name, meta.Version+1, size, hash)
+}
+
+func (c *ElasticMetaManager) LatestVersion(name string) (meta Meta, err error) {
+	u := c.getUrlBuilder("_search")
+
+	queries := url.Values{}
+	queries.Add("name", name)
+	queries.Add("size", "1")
+	queries.Add("sort", "version:desc")
+
+	u.RawQuery = queries.Encode()
+
+	response, err := http.Get(u.String())
+
+	if err != nil {
+		return
+	}
+
+	if response.StatusCode != http.StatusOK {
+		err = fmt.Errorf("fail to ger latest version by responsed %d", response.StatusCode)
+		return
+	}
+
+	body, _ := ioutil.ReadAll(response.Body)
+	var r searched
+
+	err = json.Unmarshal(body, &r)
+
+	if err != nil {
+		return
+	}
+
+	if len(r.Hits.Hits) != 0 {
+		meta = r.Hits.Hits[0].Source
+	}
+
+	return
 }
 
 func (c *ElasticMetaManager) getUrlBuilder(op string) *url.URL {
@@ -184,7 +184,7 @@ func (c *ElasticMetaManager) getMeta(name string, version int) (meta Meta, err e
 	}
 
 	if response.StatusCode != http.StatusOK {
-		err = fmt.Errorf("elasticsearch responsed status: %s", response.StatusCode)
+		err = fmt.Errorf("elasticsearch responsed status: %d", response.StatusCode)
 		return
 	}
 

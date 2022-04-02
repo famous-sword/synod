@@ -14,11 +14,19 @@ var (
 	ErrInvalidAddr = errors.New("invalid addr")
 )
 
+// RESTServer is an api server for front user
+// it provides rest api
 type RESTServer struct {
+	// service name for register to discover
+	// and other services subscribes
 	Name       string
 	Addr       string
+	// a running http server
 	Server     *http.Server
+	// used to publish self to discovery
 	publisher  *discovery.Publisher
+
+	// used to subscribe other services
 	subscriber *discovery.Subscriber
 }
 

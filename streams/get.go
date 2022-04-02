@@ -9,6 +9,7 @@ import (
 
 var ErrInvalidServer = errors.New("invalid server address")
 
+// FetchStream used to fetch objects from other service
 type FetchStream struct {
 	reader io.Reader
 }

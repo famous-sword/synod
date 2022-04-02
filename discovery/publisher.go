@@ -6,11 +6,14 @@ import (
 	"log"
 )
 
+// Publisher publish service to discovery
 type Publisher struct {
 	cli       *etcd.Client
+	// service name
 	name      string
 	addr      string
 	leaseId   etcd.LeaseID
+	// service keepalive channel
 	heartbeat <-chan *etcd.LeaseKeepAliveResponse
 }
 

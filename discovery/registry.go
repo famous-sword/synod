@@ -13,6 +13,7 @@ var (
 	once   sync.Once
 )
 
+// Registry is an etcd client factory
 func Registry() *etcd.Client {
 	once.Do(func() {
 		cli, err := etcd.New(etcd.Config{
