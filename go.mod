@@ -3,9 +3,12 @@ module synod
 go 1.18
 
 require (
+	github.com/elastic/go-elasticsearch/v7 v7.17.1
 	github.com/gin-gonic/gin v1.7.7
 	github.com/pkg/errors v0.9.1
+	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.10.1
+	github.com/valyala/fastjson v1.6.3
 	go.etcd.io/etcd/api/v3 v3.5.2
 	go.etcd.io/etcd/client/v3 v3.5.2
 )
@@ -13,7 +16,6 @@ require (
 require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
-	github.com/elastic/go-elasticsearch/v7 v7.17.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect
@@ -33,7 +35,6 @@ require (
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.4.1 // indirect
-	github.com/spf13/cobra v1.4.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect

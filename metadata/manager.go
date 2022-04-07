@@ -15,7 +15,7 @@ type Manager interface {
 	Get(name string, version int) (Meta, error)
 	Put(name string, version int, size int64, hash string) error
 	Remove(name string, version int)
-	Versions(name string, from, size int64) ([]Meta, error)
+	Versions(name string, from, size int) ([]Meta, error)
 	AddVersion(name, hash string, size int64) error
 	LatestVersion(name string) (Meta, error)
 }

@@ -57,6 +57,26 @@ func (s *Service) load(ctx *gin.Context) {
 	io.Copy(ctx.Writer, binary)
 }
 
+func (s *Service) exists(ctx *gin.Context) {
+	hash := ctx.Param("hash")
+
+	r := gin.H{
+		"exists": exists(hash),
+	}
+
+	render.Success().With(r).To(ctx)
+}
+
+func exists(hash string) bool {
+	_, err := os.Stat(withWorkdir(hash))
+
+	if err == nil {
+		return true
+	}
+
+	return os.IsExist(err)
+}
+
 // withWorkdir join full path with workdir
 func withWorkdir(name string) string {
 	return filepath.Join(conf.String("storage.workdir"), name)

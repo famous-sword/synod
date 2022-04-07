@@ -13,8 +13,8 @@ import (
 
 var (
 	ErrHashRequired = errors.New("required object hash in digest header")
-	ErrInvalidName = errors.New("invalid name")
-	ErrNoPeer = errors.New("no peer available")
+	ErrInvalidName  = errors.New("invalid name")
+	ErrNoPeer       = errors.New("no peer available")
 )
 
 func (s *Service) put(ctx *gin.Context) {
@@ -74,8 +74,8 @@ func (s *Service) load(ctx *gin.Context) {
 
 	var (
 		version int
-		meta metadata.Meta
-		err error
+		meta    metadata.Meta
+		err     error
 	)
 
 	if len(versionId) != 0 {

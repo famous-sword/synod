@@ -78,7 +78,7 @@ func (c *ElasticMetaManager) Remove(name string, version int) {
 	_, _ = request.Do(context.Background(), c.client)
 }
 
-func (c *ElasticMetaManager) Versions(name string, from, size int64) ([]Meta, error) {
+func (c *ElasticMetaManager) Versions(name string, from, size int) ([]Meta, error) {
 	var query string
 
 	if name == "" {

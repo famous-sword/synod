@@ -29,6 +29,7 @@ func (s *Service) Run() error {
 	handler := gin.Default()
 	handler.GET("/objects/:name", s.load)
 	handler.PUT("/objects/:name", s.put)
+	handler.GET("/locates/:hash", s.exists)
 
 	server := &http.Server{
 		Addr:    s.Addr,
@@ -47,8 +48,4 @@ func (s *Service) Run() error {
 	})
 
 	return s.Server.ListenAndServe()
-}
-
-func (s *Service)locate(ctx *gin.Context)  {
-
 }

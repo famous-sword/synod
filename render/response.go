@@ -32,9 +32,9 @@ func OfError(err error) *Response {
 }
 
 func NotFound() *Response {
-	 r := Fail().WithStatus(http.StatusNotFound)
+	r := Fail().WithStatus(http.StatusNotFound)
 
-	 return r
+	return r
 }
 
 func (r *Response) WithStatus(status int) *Response {
