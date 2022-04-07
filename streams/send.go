@@ -6,13 +6,13 @@ import (
 	"net/http"
 )
 
-// PutStream used to put objects to other service
-type PutStream struct {
+// Sender send object to target service
+type Sender struct {
 	writer *io.PipeWriter
 	err    chan error
 }
 
-func NewPutStream(target string) *PutStream {
+func NewSender(target string) *Sender {
 	reader, writer := io.Pipe()
 	e := make(chan error)
 
@@ -27,14 +27,14 @@ func NewPutStream(target string) *PutStream {
 		e <- err
 	}()
 
-	return &PutStream{writer: writer, err: e}
+	return &Sender{writer: writer, err: e}
 }
 
-func (p *PutStream) Write(b []byte) (n int, err error) {
+func (p *Sender) Write(b []byte) (n int, err error) {
 	return p.writer.Write(b)
 }
 
-func (p *PutStream) Close() error {
+func (p *Sender) Close() error {
 	p.writer.Close()
 	return <-p.err
 }

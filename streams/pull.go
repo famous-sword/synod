@@ -9,12 +9,12 @@ import (
 
 var ErrInvalidServer = errors.New("invalid server address")
 
-// FetchStream used to fetch objects from other service
-type FetchStream struct {
+// Puller pull object from target service
+type Puller struct {
 	reader io.Reader
 }
 
-func NewFetchStream(from string) (*FetchStream, error) {
+func NewPuller(from string) (*Puller, error) {
 	if from == "" {
 		return nil, ErrInvalidServer
 	}
@@ -29,9 +29,9 @@ func NewFetchStream(from string) (*FetchStream, error) {
 		return nil, fmt.Errorf("%s responsed status code: %d", from, response.StatusCode)
 	}
 
-	return &FetchStream{reader: response.Body}, err
+	return &Puller{reader: response.Body}, err
 }
 
-func (r *FetchStream) Read(b []byte) (n int, err error) {
+func (r *Puller) Read(b []byte) (n int, err error) {
 	return r.reader.Read(b)
 }
