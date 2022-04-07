@@ -15,9 +15,9 @@ var (
 	ErrInvalidAddr = errors.New("invalid addr")
 )
 
-// RESTServer is an api server for front user
+// Service is an api server for front user
 // it provides rest api
-type RESTServer struct {
+type Service struct {
 	// service name for register to discover
 	// and other services subscribes
 	Name string
@@ -33,15 +33,15 @@ type RESTServer struct {
 	metaManager metadata.Manager
 }
 
-func NewRESTServer() *RESTServer {
-	obj := &RESTServer{}
+func New() *Service {
+	obj := &Service{}
 	obj.Name = "api"
 	obj.Addr = conf.String("api.addr")
 
 	handler := gin.Default()
-	handler.GET("/objects/*name", obj.loadObject)
-	handler.PUT("/objects/*name", obj.putObject)
-	handler.GET("/locates/*name", obj.locate)
+	handler.GET("/objects/:name", obj.load)
+	handler.PUT("/objects/:name", obj.put)
+	handler.GET("/locates/:name", obj.locate)
 
 	obj.Server = &http.Server{
 		Handler: handler,
@@ -52,7 +52,7 @@ func NewRESTServer() *RESTServer {
 	return obj
 }
 
-func (s *RESTServer) Run() error {
+func (s *Service) Run() error {
 	if s.Addr == "" {
 		return ErrInvalidAddr
 	}
@@ -79,6 +79,6 @@ func (s *RESTServer) Run() error {
 	return s.Server.ListenAndServe()
 }
 
-func (s *RESTServer) Close() {
+func (s *Service) Close() {
 	s.Server.Shutdown(context.TODO())
 }

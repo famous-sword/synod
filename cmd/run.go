@@ -7,7 +7,7 @@ import (
 	"synod/storage"
 )
 
-var apiService *api.RESTServer
+var apiService *api.Service
 
 func RunCommand() *cobra.Command {
 	runner := &cobra.Command{
@@ -26,7 +26,7 @@ func RunCommand() *cobra.Command {
 		Use:   "api",
 		Short: "run api service",
 		PreRun: func(cmd *cobra.Command, args []string) {
-			apiService = api.NewRESTServer()
+			apiService = api.New()
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			apiService.Run()
@@ -40,7 +40,7 @@ func RunCommand() *cobra.Command {
 		Use:   "storage",
 		Short: "run storage service",
 		Run: func(cmd *cobra.Command, args []string) {
-			svc := storage.NewLocalStorage()
+			svc := storage.New()
 			svc.Run()
 		},
 	}

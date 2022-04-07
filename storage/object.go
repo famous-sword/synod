@@ -10,15 +10,15 @@ import (
 	"synod/render"
 )
 
-func (s *LocalStorage) putObject(ctx *gin.Context) {
-	path := ctx.Param("path")
+func (s *Service) put(ctx *gin.Context) {
+	name := ctx.Param("name")
 
-	if path == "" {
-		render.Fail().WithMessage("invalid path").To(ctx)
+	if name == "" {
+		render.Fail().WithMessage("invalid name").To(ctx)
 		return
 	}
 
-	file, err := os.Create(StoreDisk(path))
+	file, err := os.Create(withWorkdir(name))
 
 	if err != nil {
 		render.Fail().WithError(err).To(ctx)
@@ -37,15 +37,15 @@ func (s *LocalStorage) putObject(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"written": written})
 }
 
-func (s *LocalStorage) loadObject(ctx *gin.Context) {
-	path := ctx.Param("path")
+func (s *Service) load(ctx *gin.Context) {
+	name := ctx.Param("name")
 
-	if path == "" {
-		render.Fail().WithMessage("invalid path").To(ctx)
+	if name == "" {
+		render.Fail().WithMessage("invalid name").To(ctx)
 		return
 	}
 
-	binary, err := os.Open(StoreDisk(path))
+	binary, err := os.Open(withWorkdir(name))
 
 	if err != nil {
 		render.Fail().WithError(err).To(ctx)
@@ -57,7 +57,7 @@ func (s *LocalStorage) loadObject(ctx *gin.Context) {
 	io.Copy(ctx.Writer, binary)
 }
 
-func StoreDisk(path string) string {
-	disk := conf.String("storage.local")
-	return filepath.Join(disk, path)
+// withWorkdir join full path with workdir
+func withWorkdir(name string) string {
+	return filepath.Join(conf.String("storage.workdir"), name)
 }

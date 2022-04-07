@@ -6,7 +6,7 @@ import (
 )
 
 // confirm object in which storage service
-func (s *RESTServer) locate(ctx *gin.Context) {
+func (s *Service) locate(ctx *gin.Context) {
 	path := ctx.Param("path")
 
 	if path == "" {

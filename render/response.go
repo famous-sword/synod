@@ -31,6 +31,12 @@ func OfError(err error) *Response {
 	return r
 }
 
+func NotFound() *Response {
+	 r := Fail().WithStatus(http.StatusNotFound)
+
+	 return r
+}
+
 func (r *Response) WithStatus(status int) *Response {
 	r.Status = status
 

@@ -7,8 +7,8 @@ import (
 	"synod/discovery"
 )
 
-// LocalStorage is a local disk storage service
-type LocalStorage struct {
+// Service is a local disk storage service
+type Service struct {
 	Name   string
 	Addr   string
 	Server *http.Server
@@ -18,17 +18,17 @@ type LocalStorage struct {
 	subscriber *discovery.Subscriber
 }
 
-func NewLocalStorage() *LocalStorage {
-	return &LocalStorage{}
+func New() *Service {
+	return &Service{
+		Name: "storage",
+		Addr: conf.String("storage.addr"),
+	}
 }
 
-func (s *LocalStorage) Run() error {
-	s.Name = "storage"
-	s.Addr = conf.String("storage.addr")
-
+func (s *Service) Run() error {
 	handler := gin.Default()
-	handler.GET("/objects/*path", s.loadObject)
-	handler.PUT("/objects/*path", s.putObject)
+	handler.GET("/objects/:name", s.load)
+	handler.PUT("/objects/:name", s.put)
 
 	server := &http.Server{
 		Addr:    s.Addr,
@@ -47,4 +47,8 @@ func (s *LocalStorage) Run() error {
 	})
 
 	return s.Server.ListenAndServe()
+}
+
+func (s *Service)locate(ctx *gin.Context)  {
+
 }

@@ -5,15 +5,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"io"
+	"strconv"
+	"synod/metadata"
 	"synod/render"
 	"synod/streams"
 )
 
 var (
 	ErrHashRequired = errors.New("required object hash in digest header")
+	ErrInvalidName = errors.New("invalid name")
+	ErrNoPeer = errors.New("no peer available")
 )
 
-func (s *RESTServer) putObject(ctx *gin.Context) {
+func (s *Service) put(ctx *gin.Context) {
 	hash := getHash(ctx)
 
 	if hash == "" {
@@ -24,14 +28,14 @@ func (s *RESTServer) putObject(ctx *gin.Context) {
 	name := ctx.Param("name")
 
 	if name == "" {
-		render.Fail().WithMessage("invalid name").To(ctx)
+		render.OfError(ErrInvalidName).To(ctx)
 		return
 	}
 
 	peer := s.subscriber.PickPeer("storage", hash)
 
 	if peer == "" {
-		render.Fail().WithMessage("no peer available").To(ctx)
+		render.OfError(ErrNoPeer).To(ctx)
 		return
 	}
 
@@ -58,22 +62,50 @@ func (s *RESTServer) putObject(ctx *gin.Context) {
 	render.Success().To(ctx)
 }
 
-func (s *RESTServer) loadObject(ctx *gin.Context) {
-	path := ctx.Param("path")
+func (s *Service) load(ctx *gin.Context) {
+	name := ctx.Param("name")
 
-	if path == "" {
-		render.Fail().WithMessage("invalid path").To(ctx)
+	if name == "" {
+		render.OfError(ErrInvalidName).To(ctx)
 		return
 	}
 
-	peer := s.subscriber.PickPeer("storage", path)
+	versionId := ctx.Query("version")
+
+	var (
+		version int
+		meta metadata.Meta
+		err error
+	)
+
+	if len(versionId) != 0 {
+		version, err = strconv.Atoi(versionId)
+
+		if err != nil {
+			render.OfError(err).To(ctx)
+			return
+		}
+	}
+
+	meta, err = s.metaManager.Get(name, version)
+
+	if err != nil {
+		render.OfError(err).To(ctx)
+	}
+
+	if meta.Hash == "" {
+		render.NotFound().To(ctx)
+		return
+	}
+
+	peer := s.subscriber.PickPeer("storage", meta.Hash)
 
 	if peer == "" {
-		render.Fail().WithMessage("no peer available").To(ctx)
+		render.OfError(ErrNoPeer).To(ctx)
 		return
 	}
 
-	from := fmt.Sprintf("http://%s/objects%s", peer, path)
+	from := fmt.Sprintf("http://%s/objects/%s", peer, meta.Hash)
 
 	stream, err := streams.NewFetchStream(from)
 
