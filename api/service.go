@@ -12,7 +12,10 @@ import (
 )
 
 var (
-	ErrInvalidAddr = errors.New("invalid addr")
+	ErrInvalidAddr  = errors.New("invalid addr")
+	ErrHashRequired = errors.New("required object hash in digest header")
+	ErrInvalidName  = errors.New("invalid name")
+	ErrNoPeer       = errors.New("no peer available")
 )
 
 // Service is an api server for front user

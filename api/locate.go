@@ -18,38 +18,44 @@ func (s *Service) locate(ctx *gin.Context) {
 		return
 	}
 
-	addr := s.subscriber.PickPeer("storage", hash)
-
-	if addr == "" {
-		render.Fail().WithMessage("no storage service available").To(ctx)
-		return
-	}
-
-	response, err := http.Get(fmt.Sprintf("http://%s/locates/%s", addr, hash))
+	exists, err := s.exists(hash)
 
 	if err != nil {
 		render.OfError(err).To(ctx)
 		return
 	}
 
+	r := gin.H{
+		"exists": exists,
+	}
+
+	render.Success().With(r).To(ctx)
+}
+
+func (s *Service) exists(hash string) (bool, error) {
+	addr := s.subscriber.PickPeer("storage", hash)
+
+	if addr == "" {
+		return false, ErrNoPeer
+	}
+
+	url := fmt.Sprintf("http://%s/locates/%s", addr, hash)
+
+	response, err := http.Get(url)
+
+	if err != nil {
+		return false, err
+	}
+
 	if response.StatusCode != http.StatusOK {
-		render.Fail().To(ctx)
-		return
+		return false, fmt.Errorf("service: %s responsed %d", url, response.StatusCode)
 	}
 
 	bytes, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		render.OfError(err).To(ctx)
-		return
+		return false, err
 	}
 
-	fmt.Printf("%s\n", string(bytes))
-
-	r := gin.H{
-		"peer":   addr,
-		"exists": fastjson.GetBool(bytes, "data", "exists"),
-	}
-
-	render.Success().With(r).To(ctx)
+	return fastjson.GetBool(bytes, "data", "exists"), nil
 }
