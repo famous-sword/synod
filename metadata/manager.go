@@ -1,6 +1,15 @@
 package metadata
 
-import "synod/conf"
+import (
+	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/pkg/errors"
+	"log"
+	"synod/conf"
+)
+
+var (
+	ErrMetaNotFound = errors.New("meta data not found")
+)
 
 type Manager interface {
 	Get(name string, version int) (Meta, error)
@@ -12,7 +21,22 @@ type Manager interface {
 }
 
 func New() Manager {
+	return createElasticMetaManager()
+}
+
+func createElasticMetaManager() Manager {
+	cli, err := elasticsearch.NewClient(elasticsearch.Config{
+		Addresses: conf.StringSlice("meta.elasticsearch.endpoints"),
+		Username:  conf.String("meta.elasticsearch.username"),
+		Password:  conf.String("meta.elasticsearch.password"),
+	})
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	return &ElasticMetaManager{
-		baseURL: conf.String("meta.elasticsearch.endpoint"),
+		client:    cli,
+		indexName: "metas",
 	}
 }

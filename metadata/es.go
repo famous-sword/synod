@@ -2,27 +2,32 @@ package metadata
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"net/http"
-	"net/url"
-	"strconv"
+	"strings"
 )
 
 type (
 	// searched response of elasticsearch
 	searched struct {
 		Hits struct {
-			Total int
-			Hits  []struct {
+			Total struct {
+				Value    int    `json:"value"`
+				Relation string `json:"relation"`
+			}
+			Hits []struct {
 				Source Meta `json:"_source"`
 			}
 		}
 	}
 
 	ElasticMetaManager struct {
-		baseURL string
+		client    *elasticsearch.Client
+		indexName string
 	}
 )
 
@@ -31,7 +36,7 @@ func (c *ElasticMetaManager) Get(name string, version int) (Meta, error) {
 		return c.LatestVersion(name)
 	}
 
-	return c.getMeta(name, version)
+	return c.getMetaById(name, version)
 }
 
 func (c *ElasticMetaManager) Put(name string, version int, size int64, hash string) error {
@@ -48,74 +53,68 @@ func (c *ElasticMetaManager) Put(name string, version int, size int64, hash stri
 		return err
 	}
 
-	u := c.getUrlBuilder(makeMetaDocName(name, version))
-	queries := &url.Values{}
-	queries.Add("op_type", "create")
-	u.RawPath = queries.Encode()
+	request := esapi.IndexRequest{
+		Index:      c.indexName,
+		DocumentID: generateId(name, version),
+		Body:       bytes.NewReader(b),
+		OpType:     "create",
+	}
 
-	client := &http.Client{}
-	request, err := http.NewRequest("PUT", u.String(), bytes.NewReader(b))
+	_, err = request.Do(context.Background(), c.client)
 
 	if err != nil {
 		return err
-	}
-
-	r, err := client.Do(request)
-
-	if err != nil {
-		return err
-	}
-
-	if r.StatusCode != http.StatusOK {
-		return fmt.Errorf("elasticsearch responsed status: %d", r.StatusCode)
 	}
 
 	return nil
 }
 
 func (c *ElasticMetaManager) Remove(name string, version int) {
-	u := c.getUrlBuilder(makeMetaDocName(name, version))
-	request, _ := http.NewRequest("DELETE", u.String(), nil)
-	client := &http.Client{}
+	request := esapi.DeleteRequest{
+		Index:      c.indexName,
+		DocumentID: generateId(name, version),
+	}
 
-	_, _ = client.Do(request)
+	_, _ = request.Do(context.Background(), c.client)
 }
 
 func (c *ElasticMetaManager) Versions(name string, from, size int64) ([]Meta, error) {
-	u := c.getUrlBuilder("_search")
-	queries := &url.Values{}
-	queries.Add("sort", "name,version")
-	queries.Add("form", strconv.FormatInt(from, 10))
-	queries.Add("size", strconv.FormatInt(size, 10))
+	var query string
 
-	if name != "" {
-		queries.Add("q", "name:"+name)
+	if name == "" {
+		query = `{"sort":[{"version":{"order":"desc"}}],"from":"%d","size":"%d"}`
+		query = fmt.Sprintf(query, from, size)
+	} else {
+		query = `{"query":{"match":{"name":"%s"}},"sort":[{"version":{"order":"desc"}}],"from":"%d","size":"%d"}`
+		query = fmt.Sprintf(query, name, from, size)
 	}
 
-	u.RawQuery = queries.Encode()
+	cli := c.client
 
-	response, err := http.Get(u.String())
+	response, err := cli.Search(
+		cli.Search.WithIndex(c.indexName),
+		cli.Search.WithBody(strings.NewReader(query)),
+		cli.Search.WithPretty(),
+	)
 
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := ioutil.ReadAll(response.Body)
+	if response.StatusCode == http.StatusNotFound {
+		return nil, ErrMetaNotFound
+	}
 
-	if err != nil {
+	var result searched
+
+	if err = json.NewDecoder(response.Body).Decode(&result); err != nil {
 		return nil, err
 	}
 
-	metas := make([]Meta, 0)
-	var results searched
-	err = json.Unmarshal(body, &results)
+	metas := make([]Meta, len(result.Hits.Hits))
 
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range results.Hits.Hits {
-		metas = append(metas, results.Hits.Hits[i].Source)
+	for i, hit := range result.Hits.Hits {
+		metas[i] = hit.Source
 	}
 
 	return metas, nil
@@ -124,7 +123,7 @@ func (c *ElasticMetaManager) Versions(name string, from, size int64) ([]Meta, er
 func (c *ElasticMetaManager) AddVersion(name, hash string, size int64) error {
 	meta, err := c.LatestVersion(name)
 
-	if err != nil {
+	if err != nil && err != ErrMetaNotFound {
 		return err
 	}
 
@@ -132,73 +131,75 @@ func (c *ElasticMetaManager) AddVersion(name, hash string, size int64) error {
 }
 
 func (c *ElasticMetaManager) LatestVersion(name string) (meta Meta, err error) {
-	u := c.getUrlBuilder("_search")
+	query := `{"query":{"match":{"name":"%s"}},"sort":[{"version":{"order":"desc"}}],"size":1}`
+	query = fmt.Sprintf(query, name)
+	cli := c.client
 
-	queries := url.Values{}
-	queries.Add("name", name)
-	queries.Add("size", "1")
-	queries.Add("sort", "version:desc")
-
-	u.RawQuery = queries.Encode()
-
-	response, err := http.Get(u.String())
-
-	if err != nil {
-		return
-	}
-
-	if response.StatusCode != http.StatusOK {
-		err = fmt.Errorf("fail to ger latest version by responsed %d", response.StatusCode)
-		return
-	}
-
-	body, _ := ioutil.ReadAll(response.Body)
-	var r searched
-
-	err = json.Unmarshal(body, &r)
+	response, err := cli.Search(
+		cli.Search.WithIndex(c.indexName),
+		cli.Search.WithBody(strings.NewReader(query)),
+		cli.Search.WithPretty(),
+	)
 
 	if err != nil {
 		return
 	}
 
-	if len(r.Hits.Hits) != 0 {
-		meta = r.Hits.Hits[0].Source
+	if response.StatusCode == http.StatusNotFound {
+		err = ErrMetaNotFound
+		return
 	}
 
-	return
+	defer response.Body.Close()
+
+	var result searched
+
+	if err = json.NewDecoder(response.Body).Decode(&result); err != nil {
+		return
+	}
+
+	if len(result.Hits.Hits) != 0 {
+		meta = result.Hits.Hits[0].Source
+	}
+
+	return meta, nil
 }
 
-func (c *ElasticMetaManager) getUrlBuilder(op string) *url.URL {
-	base := fmt.Sprintf("%s/metas/%s", c.baseURL, op)
-	u, _ := url.Parse(base)
+func (c *ElasticMetaManager) getMetaById(name string, version int) (meta Meta, err error) {
+	id := generateId(name, version)
+	query := `{"query":{"term":{"_id":"%s"}}}`
+	query = fmt.Sprintf(query, id)
 
-	return u
-}
+	cli := c.client
 
-func (c *ElasticMetaManager) getMeta(name string, version int) (meta Meta, err error) {
-	u := c.getUrlBuilder(makeMetaDocName(name, version) + "_source")
-	response, err := http.Get(u.String())
-
-	if err != nil {
-		return
-	}
-
-	if response.StatusCode != http.StatusOK {
-		err = fmt.Errorf("elasticsearch responsed status: %d", response.StatusCode)
-		return
-	}
-
-	r, err := ioutil.ReadAll(response.Body)
+	response, err := cli.Search(
+		cli.Search.WithIndex(c.indexName),
+		cli.Search.WithBody(strings.NewReader(query)),
+		cli.Search.WithPretty(),
+	)
 
 	if err != nil {
 		return
 	}
 
-	err = json.Unmarshal(r, &meta)
+	if response.StatusCode == http.StatusNotFound {
+		err = ErrMetaNotFound
+		return
+	}
 
-	return
+	var result searched
+
+	if err = json.NewDecoder(response.Body).Decode(&result); err != nil {
+		return
+	}
+
+	if len(result.Hits.Hits) != 0 {
+		meta = result.Hits.Hits[0].Source
+	}
+
+	return meta, nil
 }
 
-func makeMetaDocName(name string, version int) string {
-	return fmt.Sprintf("/objects/%s-%d", name, version)
+func generateId(name string, version int) string {
+	return fmt.Sprintf("%s-%d", strings.Trim(name, "/"), version)
 }

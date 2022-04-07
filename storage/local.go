@@ -9,9 +9,9 @@ import (
 
 // LocalStorage is a local disk storage service
 type LocalStorage struct {
-	Name       string
-	Addr       string
-	Server     *http.Server
+	Name   string
+	Addr   string
+	Server *http.Server
 	// implement features to handler storage
 	Handler    http.Handler
 	publisher  *discovery.Publisher

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"synod/conf"
 	"synod/discovery"
+	"synod/metadata"
 )
 
 var (
@@ -19,15 +20,17 @@ var (
 type RESTServer struct {
 	// service name for register to discover
 	// and other services subscribes
-	Name       string
-	Addr       string
+	Name string
+	Addr string
 	// a running http server
-	Server     *http.Server
+	Server *http.Server
 	// used to publish self to discovery
-	publisher  *discovery.Publisher
+	publisher *discovery.Publisher
 
 	// used to subscribe other services
 	subscriber *discovery.Subscriber
+
+	metaManager metadata.Manager
 }
 
 func NewRESTServer() *RESTServer {
@@ -36,13 +39,15 @@ func NewRESTServer() *RESTServer {
 	obj.Addr = conf.String("api.addr")
 
 	handler := gin.Default()
-	handler.GET("/objects/*path", obj.loadObject)
-	handler.PUT("/objects/*path", obj.putObject)
-	handler.GET("/locates/*path", obj.locate)
+	handler.GET("/objects/*name", obj.loadObject)
+	handler.PUT("/objects/*name", obj.putObject)
+	handler.GET("/locates/*name", obj.locate)
 
 	obj.Server = &http.Server{
 		Handler: handler,
 	}
+
+	obj.metaManager = metadata.New()
 
 	return obj
 }

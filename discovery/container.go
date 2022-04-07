@@ -12,17 +12,17 @@ var DefaultReplicas = 11
 // every server has each container
 type container struct {
 	// service names
-	keys    []string
+	keys []string
 	// service addr
-	values  []string
+	values []string
 	// index of service name
 	indexes map[string]int
 	// current index
-	cursor  int
-	mux     sync.RWMutex
+	cursor int
+	mux    sync.RWMutex
 
 	// event of service online or offline
-	changed  chan int
+	changed chan int
 	// loading balancer for pick peer of service
 	balancer *lb.Map
 }
