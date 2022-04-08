@@ -2,9 +2,13 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"log"
+	"os"
+	"os/signal"
 	"synod/api"
 	"synod/conf"
 	"synod/storage"
+	"syscall"
 )
 
 var apiService *api.Service
@@ -25,14 +29,22 @@ func RunCommand() *cobra.Command {
 	api := &cobra.Command{
 		Use:   "api",
 		Short: "run api service",
-		PreRun: func(cmd *cobra.Command, args []string) {
-			apiService = api.New()
-		},
 		Run: func(cmd *cobra.Command, args []string) {
-			apiService.Run()
-		},
-		PostRun: func(cmd *cobra.Command, args []string) {
-			apiService.Close()
+			quit := make(chan os.Signal)
+			signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+			svc := api.New()
+			go func() {
+				err := svc.Run()
+
+				if err != nil {
+					quit <- syscall.SIGINT
+					log.Fatalln(err)
+				}
+			}()
+
+			<-quit
+			svc.Shutdown()
 		},
 	}
 
@@ -40,8 +52,23 @@ func RunCommand() *cobra.Command {
 		Use:   "storage",
 		Short: "run storage service",
 		Run: func(cmd *cobra.Command, args []string) {
+			quit := make(chan os.Signal)
+			signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
 			svc := storage.New()
-			svc.Run()
+
+			go func() {
+				err := svc.Run()
+
+				if err != nil {
+					quit <- syscall.SIGINT
+					log.Println(err)
+				}
+			}()
+
+			<-quit
+
+			svc.Shutdown()
 		},
 	}
 

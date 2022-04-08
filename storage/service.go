@@ -2,6 +2,7 @@ package storage
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"path/filepath"
 	"synod/conf"
@@ -50,14 +51,26 @@ func (s *Service) Run() error {
 	s.publisher = discovery.NewPublisher(s.Name, s.Addr)
 	s.subscriber = discovery.NewSubscriber("api")
 
-	s.publisher.Publish()
-	s.subscriber.Subscribe()
+	if err := s.publisher.Publish(); err != nil {
+		return err
+	}
 
-	s.Server.RegisterOnShutdown(func() {
-		s.publisher.Unpublished()
-	})
+	if err := s.subscriber.Subscribe(); err != nil {
+		return err
+	}
 
 	return s.Server.ListenAndServe()
+}
+
+func (s *Service)Shutdown()  {
+	var err error
+
+	if err = s.publisher.Unpublished(); err != nil {
+		log.Println(err)
+	}
+	if err = s.subscriber.Unsubscribe(); err != nil {
+		log.Println(err)
+	}
 }
 
 // withWorkdir generate full path in work dir

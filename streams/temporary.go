@@ -1,11 +1,11 @@
 package streams
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/valyala/fastjson"
 	"io/ioutil"
 	"net/http"
-	"strings"
 )
 
 type TempStream struct {
@@ -50,7 +50,7 @@ func NewTempStream(server, name string, size int64) (*TempStream, error) {
 // Large files need to be written many times
 // which may cause the storage service to open too many files
 func (t *TempStream) Write(p []byte) (n int, err error) {
-	request, err := http.NewRequest("PATCH", t.url, strings.NewReader(string(p)))
+	request, err := http.NewRequest("PATCH", t.url, bytes.NewReader(p))
 
 	if err != nil {
 		return n, err

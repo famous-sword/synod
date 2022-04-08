@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"log"
@@ -38,54 +37,51 @@ type Service struct {
 }
 
 func New() *Service {
-	obj := &Service{}
-	obj.Name = "api"
-	obj.Addr = conf.String("api.addr")
-
-	handler := gin.Default()
-	handler.GET("/objects/:name", obj.load)
-	handler.PUT("/objects/:name", obj.put)
-	handler.DELETE("/objects/:name", obj.versions)
-	
-	handler.GET("/versions/:name", obj.versions)
-	handler.GET("/locates/:hash", obj.locate)
-
-	obj.Server = &http.Server{
-		Handler: handler,
+	return &Service{
+		Name: "api",
+		Addr: conf.String("api.addr"),
 	}
-
-	obj.metaManager = metadata.New()
-
-	return obj
 }
 
 func (s *Service) Run() error {
+	handler := gin.Default()
+	handler.GET("/objects/:name", s.load)
+	handler.PUT("/objects/:name", s.put)
+	handler.DELETE("/objects/:name", s.versions)
+
+	handler.GET("/versions/:name", s.versions)
+	handler.GET("/locates/:hash", s.locate)
+
+	s.Server = &http.Server{
+		Handler: handler,
+	}
+
+	s.metaManager = metadata.New()
+
 	if s.Addr == "" {
 		return ErrInvalidAddr
 	}
 
 	s.Server.Addr = s.Addr
 	s.publisher = discovery.NewPublisher(s.Name, s.Addr)
-	s.publisher.Publish()
+	if err := s.publisher.Publish(); err != nil {
+		return err
+	}
+
 	s.subscriber = discovery.NewSubscriber("storage")
-
-	s.Server.RegisterOnShutdown(func() {
-		log.Println("on shutdown...")
-
-		var err error
-		if err = s.publisher.Unpublished(); err != nil {
-			log.Println(err)
-		}
-		if err = s.subscriber.Unsubscribe(); err != nil {
-			log.Println(err)
-		}
-	})
-
-	s.subscriber.Subscribe()
+	if err := s.subscriber.Subscribe(); err != nil {
+		return err
+	}
 
 	return s.Server.ListenAndServe()
 }
 
-func (s *Service) Close() {
-	s.Server.Shutdown(context.TODO())
+func (s *Service) Shutdown() {
+	var err error
+	if err = s.publisher.Unpublished(); err != nil {
+		log.Println(err)
+	}
+	if err = s.subscriber.Unsubscribe(); err != nil {
+		log.Println(err)
+	}
 }
