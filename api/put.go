@@ -6,6 +6,7 @@ import (
 	"io"
 	"synod/render"
 	"synod/streams"
+	"synod/util"
 )
 
 func (s *Service) put(ctx *gin.Context) {
@@ -38,7 +39,7 @@ func (s *Service) put(ctx *gin.Context) {
 	render.Success().To(ctx)
 }
 
-func (s *Service) doPut(reader io.Reader, hash string, _ int64) error {
+func (s *Service) doPut(reader io.Reader, hash string, size int64) error {
 	exists, err := s.exists(hash)
 
 	if err != nil {
@@ -55,19 +56,21 @@ func (s *Service) doPut(reader io.Reader, hash string, _ int64) error {
 		return ErrNoPeer
 	}
 
-	to := fmt.Sprintf("http://%s/objects/%s", peer, hash)
-
-	stream := streams.NewSender(to)
-
-	_, err = io.Copy(stream, reader)
+	tmp, err := streams.NewTempStream(peer, hash, size)
 
 	if err != nil {
 		return err
 	}
 
-	if err = stream.Close(); err != nil {
-		return err
+	c := util.SumHash(io.TeeReader(reader, tmp))
+	fmt.Println(hash, c)
+
+	if hash != c {
+		tmp.Commit(false)
+		return ErrHashCheckFail
 	}
+
+	tmp.Commit(true)
 
 	return nil
 }

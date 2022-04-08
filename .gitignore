@@ -22,4 +22,5 @@ go.work
 
 .idea
 .DS_Store
-/var/disk/*
+/var
+!/var/config.yml

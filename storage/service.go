@@ -3,8 +3,10 @@ package storage
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"path/filepath"
 	"synod/conf"
 	"synod/discovery"
+	"time"
 )
 
 // Service is a local disk storage service
@@ -28,13 +30,21 @@ func New() *Service {
 func (s *Service) Run() error {
 	handler := gin.Default()
 	handler.GET("/objects/:name", s.load)
-	handler.PUT("/objects/:name", s.put)
 	handler.GET("/locates/:hash", s.exists)
 
+	handler.POST("/tmp/:name", s.createTemp)
+	handler.PATCH("/tmp/:uuid", s.patchTemp)
+	handler.PUT("/tmp/:uuid", s.putTemp)
+	handler.DELETE("/tmp/:uuid", s.removeTemp)
+
 	server := &http.Server{
-		Addr:    s.Addr,
-		Handler: handler,
+		Addr:         s.Addr,
+		Handler:      handler,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
+
+	server.SetKeepAlivesEnabled(false)
 
 	s.Server = server
 	s.publisher = discovery.NewPublisher(s.Name, s.Addr)
@@ -48,4 +58,14 @@ func (s *Service) Run() error {
 	})
 
 	return s.Server.ListenAndServe()
+}
+
+// withWorkdir generate full path in work dir
+func withWorkdir(name string) string {
+	return filepath.Join(conf.String("storage.workdir"), name)
+}
+
+// withTemp generate full path in temp dir
+func withTemp(name string) string {
+	return filepath.Join(conf.String("storage.temp"), name)
 }
