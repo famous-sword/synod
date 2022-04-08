@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
-	"synod/render"
+	"synod/util/render"
 )
 
 func (s *Service) versions(ctx *gin.Context) {

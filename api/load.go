@@ -6,8 +6,8 @@ import (
 	"io"
 	"strconv"
 	"synod/metadata"
-	"synod/render"
 	"synod/streams"
+	"synod/util/render"
 )
 
 func (s *Service) load(ctx *gin.Context) {

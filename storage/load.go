@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"os"
-	"synod/render"
+	"synod/util/render"
 )
 
 func (s *Service) load(ctx *gin.Context) {

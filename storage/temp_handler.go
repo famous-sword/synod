@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"synod/render"
+	"synod/util/render"
 )
 
 func (s *Service) createTemp(ctx *gin.Context) {

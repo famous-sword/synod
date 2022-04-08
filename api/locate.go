@@ -6,7 +6,7 @@ import (
 	"github.com/valyala/fastjson"
 	"io/ioutil"
 	"net/http"
-	"synod/render"
+	"synod/util/render"
 )
 
 // confirm object in which storage service

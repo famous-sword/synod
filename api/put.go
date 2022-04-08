@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
-	"synod/render"
 	"synod/streams"
 	"synod/util"
+	"synod/util/render"
 )
 
 func (s *Service) put(ctx *gin.Context) {
