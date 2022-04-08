@@ -45,6 +45,8 @@ func New() *Service {
 	handler := gin.Default()
 	handler.GET("/objects/:name", obj.load)
 	handler.PUT("/objects/:name", obj.put)
+	handler.DELETE("/objects/:name", obj.versions)
+	
 	handler.GET("/versions/:name", obj.versions)
 	handler.GET("/locates/:hash", obj.locate)
 

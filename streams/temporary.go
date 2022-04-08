@@ -46,6 +46,9 @@ func NewTempStream(server, name string, size int64) (*TempStream, error) {
 	return sender, nil
 }
 
+// Problem to be solved：
+// Large files need to be written many times
+// which may cause the storage service to open too many files
 func (t *TempStream) Write(p []byte) (n int, err error) {
 	request, err := http.NewRequest("PATCH", t.url, strings.NewReader(string(p)))
 
