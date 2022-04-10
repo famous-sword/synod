@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/spf13/cobra"
-	"log"
 	"synod/cmd"
 	"synod/discovery"
+	"synod/util/logx"
 )
 
 func main() {
@@ -16,8 +16,9 @@ func main() {
 	root.AddCommand(cmd.RunCommand())
 
 	if err := root.Execute(); err != nil {
-		log.Println(err)
+		logx.Errorw("synod exec error", err)
 	}
 
 	discovery.Shutdown()
+	logx.Flush()
 }

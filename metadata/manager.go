@@ -3,8 +3,8 @@ package metadata
 import (
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/pkg/errors"
-	"log"
 	"synod/conf"
+	"synod/util/logx"
 )
 
 var (
@@ -32,7 +32,7 @@ func createElasticMetaManager() Manager {
 	})
 
 	if err != nil {
-		log.Fatalln(err)
+		logx.Fatalw("create elasticsearch meta manager error", err)
 	}
 
 	return &ElasticMetaManager{

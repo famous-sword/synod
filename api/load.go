@@ -57,7 +57,7 @@ func (s *Service) load(ctx *gin.Context) {
 
 	from := fmt.Sprintf("http://%s/objects/%s", peer, meta.Hash)
 
-	stream, err := streams.NewCopyStream(from)
+	stream, err := streams.NewCopier(from)
 
 	if err != nil {
 		render.OfError(err).To(ctx)

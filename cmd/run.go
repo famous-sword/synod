@@ -1,32 +1,48 @@
 package cmd
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
-	"log"
 	"os"
 	"os/signal"
 	"synod/api"
 	"synod/conf"
 	"synod/storage"
+	"synod/util/logx"
 	"syscall"
 )
-
-var apiService *api.Service
 
 func RunCommand() *cobra.Command {
 	runner := &cobra.Command{
 		Use:   "run [server]",
 		Short: "run a service",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if err := conf.Startup(); err != nil {
+			var err error
+			if err = conf.Startup(); err != nil {
 				return err
+			}
+
+			if err = logx.Setup(); err != nil {
+				return err
+			}
+
+			if conf.Bool("app.debug") {
+				gin.SetMode(gin.DebugMode)
+			} else {
+				gin.SetMode(gin.ReleaseMode)
 			}
 
 			return nil
 		},
 	}
 
-	api := &cobra.Command{
+	runner.AddCommand(APICommand(), StorageCommand())
+
+	return runner
+}
+
+func APICommand() *cobra.Command {
+	return &cobra.Command{
 		Use:   "api",
 		Short: "run api service",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -39,7 +55,7 @@ func RunCommand() *cobra.Command {
 
 				if err != nil {
 					quit <- syscall.SIGINT
-					log.Fatalln(err)
+					logx.Errorw("api service run error", err)
 				}
 			}()
 
@@ -47,8 +63,10 @@ func RunCommand() *cobra.Command {
 			svc.Shutdown()
 		},
 	}
+}
 
-	storage := &cobra.Command{
+func StorageCommand() *cobra.Command {
+	return &cobra.Command{
 		Use:   "storage",
 		Short: "run storage service",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -62,7 +80,7 @@ func RunCommand() *cobra.Command {
 
 				if err != nil {
 					quit <- syscall.SIGINT
-					log.Println(err)
+					logx.Errorw("storage service run error", err)
 				}
 			}()
 
@@ -71,8 +89,4 @@ func RunCommand() *cobra.Command {
 			svc.Shutdown()
 		},
 	}
-
-	runner.AddCommand(api, storage)
-
-	return runner
 }

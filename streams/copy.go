@@ -9,12 +9,12 @@ import (
 
 var ErrInvalidServer = errors.New("invalid server address")
 
-// CopyStream pull object from target service
-type CopyStream struct {
+// Copier pull object from target service
+type Copier struct {
 	reader io.Reader
 }
 
-func NewCopyStream(from string) (*CopyStream, error) {
+func NewCopier(from string) (*Copier, error) {
 	if from == "" {
 		return nil, ErrInvalidServer
 	}
@@ -29,9 +29,9 @@ func NewCopyStream(from string) (*CopyStream, error) {
 		return nil, fmt.Errorf("%s responsed status code: %d", from, response.StatusCode)
 	}
 
-	return &CopyStream{reader: response.Body}, err
+	return &Copier{reader: response.Body}, err
 }
 
-func (r *CopyStream) Read(b []byte) (n int, err error) {
+func (r *Copier) Read(b []byte) (n int, err error) {
 	return r.reader.Read(b)
 }

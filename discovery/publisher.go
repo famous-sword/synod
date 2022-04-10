@@ -3,7 +3,7 @@ package discovery
 import (
 	"context"
 	etcd "go.etcd.io/etcd/client/v3"
-	"log"
+	"synod/util/logx"
 )
 
 // Publisher publish service to discovery
@@ -66,15 +66,13 @@ func (p *Publisher) Unpublished() (err error) {
 		return err
 	}
 
-	log.Printf("%s unpublished\n", p.name)
-
 	_, err = p.cli.Revoke(context.TODO(), p.leaseId)
 
 	if err != nil {
 		return err
 	}
 
-	log.Printf("%s revoke lease: %v\n", p.name, p.leaseId)
+	logx.Infow("revoke lease", p.name, p.leaseId)
 
 	return nil
 }

@@ -4,9 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"io"
-	"log"
 	"os"
 	"strconv"
+	"synod/util/logx"
 	"synod/util/render"
 )
 
@@ -37,7 +37,7 @@ func (s *Service) patchTemp(ctx *gin.Context) {
 	origin, err := ofUuid(u)
 
 	if err != nil {
-		log.Println(err)
+		logx.Errorw("patch temp error", err)
 		render.OfError(err).To(ctx)
 		return
 	}
@@ -47,7 +47,7 @@ func (s *Service) patchTemp(ctx *gin.Context) {
 	f, err := os.OpenFile(tempFileName, os.O_WRONLY|os.O_APPEND, 0)
 
 	if err != nil {
-		log.Println(err)
+		logx.Errorw("patch temp error", err)
 		render.OfError(err).To(ctx)
 		return
 	}
@@ -57,7 +57,7 @@ func (s *Service) patchTemp(ctx *gin.Context) {
 	_, err = io.Copy(f, ctx.Request.Body)
 
 	if err != nil {
-		log.Println(err)
+		logx.Errorw("patch temp error", err)
 		render.OfError(err).To(ctx)
 		return
 	}
@@ -65,7 +65,7 @@ func (s *Service) patchTemp(ctx *gin.Context) {
 	info, err := f.Stat()
 
 	if err != nil {
-		log.Println(err)
+		logx.Errorw("patch temp error", err)
 		render.OfError(err).To(ctx)
 		return
 	}

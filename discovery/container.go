@@ -1,9 +1,9 @@
 package discovery
 
 import (
-	"log"
 	"sync"
 	"synod/discovery/lb"
+	"synod/util/logx"
 )
 
 var DefaultReplicas = 11
@@ -82,7 +82,7 @@ func (c *container) listenUpdates() {
 			select {
 			case <-c.changed:
 				c.balancer.Add(c.values...)
-				log.Println("refresh load balancer peers...")
+				logx.Infow("load balancer refresh peers...")
 			}
 		}
 	}()

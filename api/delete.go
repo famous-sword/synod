@@ -14,7 +14,7 @@ func (s *Service) delete(c *gin.Context) {
 		return
 	}
 
-	err = s.metaManager.Put(name, meta.Version + 1, 0, "")
+	err = s.metaManager.Put(name, meta.Version+1, 0, "")
 
 	if err != nil {
 		render.OfError(err).To(c)

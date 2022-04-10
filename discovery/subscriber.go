@@ -4,7 +4,7 @@ import (
 	"context"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	etcd "go.etcd.io/etcd/client/v3"
-	"log"
+	"synod/util/logx"
 )
 
 // Subscriber to subscribe service of service dependencies
@@ -62,7 +62,7 @@ func (s *Subscriber) subscribe(name string) error {
 		node := string(kv.Value)
 		if node != "" {
 			s.addNode(name, key, node)
-			log.Printf("add node from loading: %s => %s\n", key, node)
+			logx.Infow("loading node", key, node)
 		}
 	}
 
@@ -95,10 +95,10 @@ func (s *Subscriber) listen(name string) {
 				case mvccpb.PUT:
 					addr := string(event.Kv.Value)
 					s.addNode(name, key, addr)
-					log.Printf("add node from listening: %s => %s\n", key, addr)
+					logx.Infow("node online", key, addr)
 				case mvccpb.DELETE:
 					s.removeNode(name, key)
-					log.Printf("remove node from listening: %s\n", key)
+					logx.Infow("node offline", key)
 				}
 			}
 		}

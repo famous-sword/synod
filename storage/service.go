@@ -2,11 +2,11 @@ package storage
 
 import (
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 	"path/filepath"
 	"synod/conf"
 	"synod/discovery"
+	"synod/util/logx"
 	"time"
 )
 
@@ -62,14 +62,14 @@ func (s *Service) Run() error {
 	return s.Server.ListenAndServe()
 }
 
-func (s *Service)Shutdown()  {
+func (s *Service) Shutdown() {
 	var err error
 
 	if err = s.publisher.Unpublished(); err != nil {
-		log.Println(err)
+		logx.Errorw("storage service unpublished error", err)
 	}
 	if err = s.subscriber.Unsubscribe(); err != nil {
-		log.Println(err)
+		logx.Errorw("storage service unsubscribe error", err)
 	}
 }
 

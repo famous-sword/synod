@@ -3,11 +3,11 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"log"
 	"net/http"
 	"synod/conf"
 	"synod/discovery"
 	"synod/metadata"
+	"synod/util/logx"
 )
 
 var (
@@ -79,9 +79,9 @@ func (s *Service) Run() error {
 func (s *Service) Shutdown() {
 	var err error
 	if err = s.publisher.Unpublished(); err != nil {
-		log.Println(err)
+		logx.Errorw("unpublished service error", err)
 	}
 	if err = s.subscriber.Unsubscribe(); err != nil {
-		log.Println(err)
+		logx.Errorw("unsubscribe service error", err)
 	}
 }
