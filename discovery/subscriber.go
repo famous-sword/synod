@@ -82,6 +82,10 @@ func (s *Subscriber) Unsubscribe() error {
 	return s.cli.Close()
 }
 
+func (s *Subscriber) Health() string {
+	return ""
+}
+
 // listen to service online or offline
 func (s *Subscriber) listen(name string) {
 	watcher := s.cli.Watch(context.TODO(), forSubscribe(name), etcd.WithPrefix())

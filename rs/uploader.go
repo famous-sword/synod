@@ -1,7 +1,6 @@
 package rs
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"io"
 	"synod/stream"
@@ -25,8 +24,7 @@ func NewUploader(servers []string, hash string, size int64) (*Uploader, error) {
 	var err error
 
 	for i := range writers {
-		serial := fmt.Sprintf("%s.%d", hash, i)
-		writers[i], err = stream.NewTemp(servers[i], serial, shard)
+		writers[i], err = stream.NewTemp(servers[i], getShardSeq(hash, i), shard)
 
 		if err != nil {
 			return nil, err

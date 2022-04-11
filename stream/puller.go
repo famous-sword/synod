@@ -7,6 +7,7 @@ import (
 	"synod/util/urlbuilder"
 )
 
+// Puller pull object from storage service
 type Puller struct {
 	writer *io.PipeWriter
 	err    chan error

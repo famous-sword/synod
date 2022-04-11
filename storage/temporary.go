@@ -20,7 +20,7 @@ type Temp struct {
 func ofUuid(u string) (*Temp, error) {
 	name := u + extInfo
 
-	f, err := os.Open(withTemp(name))
+	f, err := os.Open(TempDir(name))
 
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func ofUuid(u string) (*Temp, error) {
 func (t *Temp) saveInfo() error {
 	originFileName := t.Uuid + extInfo
 
-	f, err := os.Create(withTemp(originFileName))
+	f, err := os.Create(TempDir(originFileName))
 
 	if err != nil {
 		return err
@@ -68,5 +68,5 @@ func (t *Temp) saveInfo() error {
 }
 
 func commit(tempName string, tmp *Temp) {
-	_ = os.Rename(tempName, withWorkdir(tmp.Name))
+	_ = os.Rename(tempName, Workdir(tmp.Name))
 }

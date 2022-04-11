@@ -5,6 +5,7 @@ import (
 	"log"
 	"sync"
 	"synod/conf"
+	"synod/util/logx"
 	"time"
 )
 
@@ -36,6 +37,8 @@ func Registry() *etcd.Client {
 
 func Shutdown() {
 	if client != nil {
-		client.Close()
+		if err := client.Close(); err != nil {
+			logx.Errorw("discovery shutdown error", "error", err)
+		}
 	}
 }

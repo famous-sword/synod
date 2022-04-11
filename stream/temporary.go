@@ -9,6 +9,8 @@ import (
 	"synod/util/urlbuilder"
 )
 
+// Temp put data to storage as a temp file
+// can use `Commit` to remove or confirm temp file
 type Temp struct {
 	Server string
 	Uuid   string
@@ -71,6 +73,7 @@ func (t *Temp) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
+// Commit Delete or commit temp file
 func (t *Temp) Commit(nice bool) {
 	method := "DELETE"
 

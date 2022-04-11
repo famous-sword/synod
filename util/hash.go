@@ -7,6 +7,7 @@ import (
 	"io"
 )
 
+// SumHash sum sha256 as string
 func SumHash(reader io.Reader) string {
 	h := sha256.New()
 	n, err := io.Copy(h, reader)

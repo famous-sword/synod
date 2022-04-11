@@ -73,12 +73,12 @@ func (s *Service) Shutdown() {
 	}
 }
 
-// withWorkdir generate full path in work dir
-func withWorkdir(name string) string {
+// Workdir generate full path in work dir
+func Workdir(name string) string {
 	return filepath.Join(conf.String("storage.workdir"), name)
 }
 
-// withTemp generate full path in temp dir
-func withTemp(name string) string {
+// TempDir generate full path in temp dir
+func TempDir(name string) string {
 	return filepath.Join(conf.String("storage.temp"), name)
 }

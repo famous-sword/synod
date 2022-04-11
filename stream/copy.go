@@ -10,7 +10,7 @@ import (
 
 var ErrInvalidServer = errors.New("invalid server address")
 
-// Copier pull object from target service
+// Copier copy object from storage service
 type Copier struct {
 	reader io.Reader
 }

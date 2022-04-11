@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"io"
+	"net/http"
 	"strconv"
 	"synod/metadata"
 	"synod/stream"
@@ -43,7 +44,7 @@ func (s *Service) load(ctx *gin.Context) {
 
 	if meta.Hash == "" {
 		// object not found
-		render.NotFound().To(ctx)
+		render.Fail().WithStatus(http.StatusNotFound).To(ctx)
 		return
 	}
 

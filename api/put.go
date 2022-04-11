@@ -63,7 +63,7 @@ func (s *Service) doPut(reader io.Reader, hash string, size int64) error {
 	}
 
 	calculated := util.SumHash(io.TeeReader(reader, tmp))
-	logx.Debugw("sum hash in put", "expected", hash, "calculated", calculated)
+	logx.Debugw("check hash", "expected", hash, "calculated", calculated)
 
 	if hash != calculated {
 		tmp.Commit(false)

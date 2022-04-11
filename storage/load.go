@@ -15,7 +15,7 @@ func (s *Service) load(ctx *gin.Context) {
 		return
 	}
 
-	binary, err := os.Open(withWorkdir(name))
+	binary, err := os.Open(Workdir(name))
 
 	if err != nil {
 		render.Fail().WithError(err).To(ctx)
@@ -38,7 +38,7 @@ func (s *Service) exists(ctx *gin.Context) {
 }
 
 func exists(hash string) bool {
-	_, err := os.Stat(withWorkdir(hash))
+	_, err := os.Stat(Workdir(hash))
 
 	if err == nil {
 		return true
