@@ -98,7 +98,7 @@ func (s *Subscriber) listen(name string) {
 					logx.Infow("node online", key, addr)
 				case mvccpb.DELETE:
 					s.removeNode(name, key)
-					logx.Infow("node offline", key)
+					logx.Infow("node offline", "key", key)
 				}
 			}
 		}

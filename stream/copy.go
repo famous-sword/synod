@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"io"
 	"net/http"
+	"synod/util/urlbuilder"
 )
 
 var ErrInvalidServer = errors.New("invalid server address")
@@ -15,7 +16,7 @@ type Copier struct {
 }
 
 func NewCopier(server, name string) (*Copier, error) {
-	from := fmt.Sprintf("http://%s/objects/%s", server, name)
+	from := urlbuilder.Join(server, "objects", name).Build()
 
 	response, err := http.Get(from)
 

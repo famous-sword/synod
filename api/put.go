@@ -1,11 +1,11 @@
 package api
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
 	"synod/stream"
 	"synod/util"
+	"synod/util/logx"
 	"synod/util/render"
 )
 
@@ -63,7 +63,7 @@ func (s *Service) doPut(reader io.Reader, hash string, size int64) error {
 	}
 
 	c := util.SumHash(io.TeeReader(reader, tmp))
-	fmt.Println(hash, c)
+	logx.Debugw("sum hash in put", hash, c)
 
 	if hash != c {
 		tmp.Commit(false)

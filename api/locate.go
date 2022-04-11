@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"synod/util/render"
+	"synod/util/urlbuilder"
 )
 
 // confirm object in which storage service
@@ -39,7 +40,7 @@ func (s *Service) exists(hash string) (bool, error) {
 		return false, ErrNoPeer
 	}
 
-	url := fmt.Sprintf("http://%s/locates/%s", addr, hash)
+	url := urlbuilder.Join(addr, "locates", hash).Build()
 
 	response, err := http.Get(url)
 

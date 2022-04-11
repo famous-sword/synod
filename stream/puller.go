@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
+	"synod/util/urlbuilder"
 )
 
 type Puller struct {
@@ -15,14 +15,10 @@ type Puller struct {
 func NewPuller(server, name string) *Puller {
 	reader, writer := io.Pipe()
 	err := make(chan error)
-	b := strings.Builder{}
-	b.WriteString("http://")
-	b.WriteString(server)
-	b.WriteString("/objects/")
-	b.WriteString(name)
+	url := urlbuilder.Join(server, "objects", name)
 
 	go func() {
-		request, e := http.NewRequest("PUT", b.String(), reader)
+		request, e := http.NewRequest("PUT", url.Build(), reader)
 
 		if e != nil {
 			err <- e

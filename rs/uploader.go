@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"io"
-	"synod/streams"
+	"synod/stream"
 )
 
 var (
@@ -26,7 +26,7 @@ func NewUploader(servers []string, hash string, size int64) (*Uploader, error) {
 
 	for i := range writers {
 		serial := fmt.Sprintf("%s.%d", hash, i)
-		writers[i], err = stream.NewTempStream(servers[i], serial, shard)
+		writers[i], err = stream.NewTemp(servers[i], serial, shard)
 
 		if err != nil {
 			return nil, err
@@ -42,6 +42,6 @@ func (u *Uploader) Commit(success bool) {
 	u.Flush()
 
 	for _, writer := range u.writers {
-		writer.(*stream.TempStream).Commit(success)
+		writer.(*stream.Temp).Commit(success)
 	}
 }

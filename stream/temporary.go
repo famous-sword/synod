@@ -6,6 +6,7 @@ import (
 	"github.com/valyala/fastjson"
 	"io/ioutil"
 	"net/http"
+	"synod/util/urlbuilder"
 )
 
 type Temp struct {
@@ -15,8 +16,8 @@ type Temp struct {
 }
 
 func NewTemp(server, name string, size int64) (*Temp, error) {
-	tmpUrl := fmt.Sprintf("http://%s/tmp/%s", server, name)
-	request, err := http.NewRequest("POST", tmpUrl, nil)
+	url := urlbuilder.Join(server, "tmp", name)
+	request, err := http.NewRequest("POST", url.Build(), nil)
 
 	if err != nil {
 		return nil, err
@@ -36,14 +37,14 @@ func NewTemp(server, name string, size int64) (*Temp, error) {
 		return nil, err
 	}
 
-	sender := &Temp{
+	tmp := &Temp{
 		Server: server,
 		Uuid:   fastjson.GetString(bytes, "data"),
 	}
 
-	sender.url = fmt.Sprintf("http://%s/tmp/%s", sender.Server, sender.Uuid)
+	tmp.url = urlbuilder.Join(tmp.Server, "tmp", tmp.Uuid).Build()
 
-	return sender, nil
+	return tmp, nil
 }
 
 // Problem to be solved：
