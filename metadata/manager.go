@@ -32,7 +32,7 @@ func createElasticMetaManager() Manager {
 	})
 
 	if err != nil {
-		logx.Fatalw("create elasticsearch meta manager error", err)
+		logx.Fatalw("create meta manager error", "adapter", "elasticsearch", "error", err)
 	}
 
 	return &ElasticMetaManager{

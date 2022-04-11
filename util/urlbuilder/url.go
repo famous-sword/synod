@@ -7,7 +7,7 @@ import (
 
 const (
 	// ModeJoin join parts into a baseURL
-	ModeJoin  = 1
+	ModeJoin = 1
 	// ModeParse create by a baseURL
 	ModeParse = 2
 )

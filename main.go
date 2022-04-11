@@ -16,7 +16,7 @@ func main() {
 	root.AddCommand(cmd.RunCommand())
 
 	if err := root.Execute(); err != nil {
-		logx.Errorw("synod exec error", err)
+		logx.Errorw("synod exec error", "error", err)
 	}
 
 	discovery.Shutdown()

@@ -62,10 +62,10 @@ func (s *Service) doPut(reader io.Reader, hash string, size int64) error {
 		return err
 	}
 
-	c := util.SumHash(io.TeeReader(reader, tmp))
-	logx.Debugw("sum hash in put", hash, c)
+	calculated := util.SumHash(io.TeeReader(reader, tmp))
+	logx.Debugw("sum hash in put", "expected", hash, "calculated", calculated)
 
-	if hash != c {
+	if hash != calculated {
 		tmp.Commit(false)
 		return ErrHashCheckFail
 	}

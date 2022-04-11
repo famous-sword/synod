@@ -66,10 +66,10 @@ func (s *Service) Shutdown() {
 	var err error
 
 	if err = s.publisher.Unpublished(); err != nil {
-		logx.Errorw("storage service unpublished error", err)
+		logx.Errorw("storage service unpublished error", "error", err)
 	}
 	if err = s.subscriber.Unsubscribe(); err != nil {
-		logx.Errorw("storage service unsubscribe error", err)
+		logx.Errorw("storage service unsubscribe error", "error", err)
 	}
 }
 

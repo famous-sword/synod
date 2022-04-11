@@ -55,7 +55,7 @@ func APICommand() *cobra.Command {
 
 				if err != nil {
 					quit <- syscall.SIGINT
-					logx.Errorw("api service run error", err)
+					logx.Errorw("api service run error", "error", err)
 				}
 			}()
 
@@ -80,7 +80,7 @@ func StorageCommand() *cobra.Command {
 
 				if err != nil {
 					quit <- syscall.SIGINT
-					logx.Errorw("storage service run error", err)
+					logx.Errorw("storage service run error", "error", err)
 				}
 			}()
 

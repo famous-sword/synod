@@ -72,7 +72,7 @@ func (p *Publisher) Unpublished() (err error) {
 		return err
 	}
 
-	logx.Infow("revoke lease", p.name, p.leaseId)
+	logx.Infow("revoke lease", "service", p.name, "leaseId", p.leaseId)
 
 	return nil
 }

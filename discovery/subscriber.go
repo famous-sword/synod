@@ -62,7 +62,7 @@ func (s *Subscriber) subscribe(name string) error {
 		node := string(kv.Value)
 		if node != "" {
 			s.addNode(name, key, node)
-			logx.Infow("loading node", key, node)
+			logx.Infow("loading peers", "name", key, "addr", node)
 		}
 	}
 
@@ -95,10 +95,10 @@ func (s *Subscriber) listen(name string) {
 				case mvccpb.PUT:
 					addr := string(event.Kv.Value)
 					s.addNode(name, key, addr)
-					logx.Infow("node online", key, addr)
+					logx.Infow("peer online", "key", key, "addr", addr)
 				case mvccpb.DELETE:
 					s.removeNode(name, key)
-					logx.Infow("node offline", "key", key)
+					logx.Infow("peer offline", "key", key)
 				}
 			}
 		}

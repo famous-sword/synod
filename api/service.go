@@ -79,9 +79,9 @@ func (s *Service) Run() error {
 func (s *Service) Shutdown() {
 	var err error
 	if err = s.publisher.Unpublished(); err != nil {
-		logx.Errorw("unpublished service error", err)
+		logx.Errorw("unpublished service error", "error", err)
 	}
 	if err = s.subscriber.Unsubscribe(); err != nil {
-		logx.Errorw("unsubscribe service error", err)
+		logx.Errorw("unsubscribe service error", "error", err)
 	}
 }
