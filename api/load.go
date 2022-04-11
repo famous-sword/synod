@@ -1,12 +1,11 @@
 package api
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
 	"strconv"
 	"synod/metadata"
-	"synod/streams"
+	"synod/stream"
 	"synod/util/render"
 )
 
@@ -55,16 +54,14 @@ func (s *Service) load(ctx *gin.Context) {
 		return
 	}
 
-	from := fmt.Sprintf("http://%s/objects/%s", peer, meta.Hash)
-
-	stream, err := streams.NewCopier(from)
+	copier, err := stream.NewCopier(peer, meta.Hash)
 
 	if err != nil {
 		render.OfError(err).To(ctx)
 		return
 	}
 
-	_, err = io.Copy(ctx.Writer, stream)
+	_, err = io.Copy(ctx.Writer, copier)
 
 	if err != nil {
 		render.OfError(err).To(ctx)

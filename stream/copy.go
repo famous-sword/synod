@@ -1,4 +1,4 @@
-package streams
+package stream
 
 import (
 	"fmt"
@@ -14,10 +14,8 @@ type Copier struct {
 	reader io.Reader
 }
 
-func NewCopier(from string) (*Copier, error) {
-	if from == "" {
-		return nil, ErrInvalidServer
-	}
+func NewCopier(server, name string) (*Copier, error) {
+	from := fmt.Sprintf("http://%s/objects/%s", server, name)
 
 	response, err := http.Get(from)
 

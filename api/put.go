@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
-	"synod/streams"
+	"synod/stream"
 	"synod/util"
 	"synod/util/render"
 )
@@ -56,7 +56,7 @@ func (s *Service) doPut(reader io.Reader, hash string, size int64) error {
 		return ErrNoPeer
 	}
 
-	tmp, err := streams.NewTempStream(peer, hash, size)
+	tmp, err := stream.NewTemp(peer, hash, size)
 
 	if err != nil {
 		return err

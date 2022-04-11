@@ -1,4 +1,4 @@
-package streams
+package stream
 
 import (
 	"bytes"
@@ -8,13 +8,13 @@ import (
 	"net/http"
 )
 
-type TempStream struct {
+type Temp struct {
 	Server string
 	Uuid   string
 	url    string
 }
 
-func NewTempStream(server, name string, size int64) (*TempStream, error) {
+func NewTemp(server, name string, size int64) (*Temp, error) {
 	tmpUrl := fmt.Sprintf("http://%s/tmp/%s", server, name)
 	request, err := http.NewRequest("POST", tmpUrl, nil)
 
@@ -36,7 +36,7 @@ func NewTempStream(server, name string, size int64) (*TempStream, error) {
 		return nil, err
 	}
 
-	sender := &TempStream{
+	sender := &Temp{
 		Server: server,
 		Uuid:   fastjson.GetString(bytes, "data"),
 	}
@@ -49,7 +49,7 @@ func NewTempStream(server, name string, size int64) (*TempStream, error) {
 // Problem to be solved：
 // Large files need to be written many times
 // which may cause the storage service to open too many files
-func (t *TempStream) Write(p []byte) (n int, err error) {
+func (t *Temp) Write(p []byte) (n int, err error) {
 	request, err := http.NewRequest("PATCH", t.url, bytes.NewReader(p))
 
 	if err != nil {
@@ -70,7 +70,7 @@ func (t *TempStream) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func (t *TempStream) Commit(nice bool) {
+func (t *Temp) Commit(nice bool) {
 	method := "DELETE"
 
 	if nice {

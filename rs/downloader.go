@@ -1,9 +1,8 @@
 package rs
 
 import (
-	"fmt"
 	"io"
-	"synod/streams"
+	"synod/stream"
 	"synod/util/logx"
 )
 
@@ -29,8 +28,7 @@ func NewDownloader(locates Locates, servers []string, hash string, size int64) (
 			continue
 		}
 
-		from := fmt.Sprintf("http://%s/objects/%s", server, getShardSeq(hash, i))
-		reader, err := streams.NewCopier(from)
+		reader, err := stream.NewCopier(server, getShardSeq(hash, i))
 
 		if err == nil {
 			readers[i] = reader
@@ -42,7 +40,7 @@ func NewDownloader(locates Locates, servers []string, hash string, size int64) (
 	var err error
 
 	for i := range readers {
-		writers[i], err = streams.NewTempStream(locates[i], getShardSeq(hash, i), shardSize)
+		writers[i], err = stream.NewTemp(locates[i], getShardSeq(hash, i), shardSize)
 
 		if err != nil {
 			return nil, err
@@ -57,7 +55,7 @@ func NewDownloader(locates Locates, servers []string, hash string, size int64) (
 func (d *Downloader) Close() {
 	for _, writer := range d.writers {
 		if writer != nil {
-			writer.(*streams.TempStream).Commit(true)
+			writer.(*stream.Temp).Commit(true)
 		}
 	}
 }
