@@ -6,7 +6,9 @@ import (
 )
 
 const (
+	// ModeJoin join parts into a baseURL
 	ModeJoin  = 1
+	// ModeParse create by a baseURL
 	ModeParse = 2
 )
 
@@ -42,7 +44,7 @@ func Of(base string) *UrlBuilder {
 }
 
 func Join(segments ...string) *UrlBuilder {
-	u := New()
+	u := newBuilder()
 	u.mode = ModeParse
 
 	baseURL := strings.Join(segments, "/")
