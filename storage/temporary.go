@@ -6,6 +6,11 @@ import (
 	"os"
 )
 
+const (
+	extInfo = ".json"
+	extTemp = ".tmp"
+)
+
 type Temp struct {
 	Uuid string
 	Name string
@@ -13,7 +18,7 @@ type Temp struct {
 }
 
 func ofUuid(u string) (*Temp, error) {
-	name := u + ".json"
+	name := u + extInfo
 
 	f, err := os.Open(withTemp(name))
 
@@ -37,7 +42,7 @@ func ofUuid(u string) (*Temp, error) {
 }
 
 func (t *Temp) saveInfo() error {
-	originFileName := t.Uuid + ".json"
+	originFileName := t.Uuid + extInfo
 
 	f, err := os.Create(withTemp(originFileName))
 

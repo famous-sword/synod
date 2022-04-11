@@ -27,7 +27,7 @@ func (s *Service) createTemp(ctx *gin.Context) {
 		return
 	}
 
-	_, _ = os.Create(withTemp(tmp.Uuid) + ".tmp")
+	_, _ = os.Create(withTemp(tmp.Uuid + extTemp))
 
 	render.Success().With(u.String()).To(ctx)
 }
@@ -42,7 +42,7 @@ func (s *Service) patchTemp(ctx *gin.Context) {
 		return
 	}
 
-	tempFileName := withTemp(u + ".tmp")
+	tempFileName := withTemp(u + extTemp)
 
 	f, err := os.OpenFile(tempFileName, os.O_WRONLY|os.O_APPEND, 0)
 
@@ -73,7 +73,7 @@ func (s *Service) patchTemp(ctx *gin.Context) {
 	// size not match, remove all file
 	if info.Size() > origin.Size {
 		_ = os.Remove(tempFileName)
-		_ = os.Remove(withTemp(u + ".json"))
+		_ = os.Remove(withTemp(u + extInfo))
 	}
 
 	render.Success().To(ctx)
@@ -89,7 +89,7 @@ func (s *Service) putTemp(ctx *gin.Context) {
 		return
 	}
 
-	tmp := withTemp(u + ".tmp")
+	tmp := withTemp(u + extTemp)
 
 	f, err := os.Open(tmp)
 
@@ -106,7 +106,7 @@ func (s *Service) putTemp(ctx *gin.Context) {
 		return
 	}
 
-	_ = os.Remove(withTemp(u + ".json"))
+	_ = os.Remove(withTemp(u + extInfo))
 	if info.Size != stat.Size() {
 		_ = os.Remove(tmp)
 		render.Fail().WithMessage("size not match").To(ctx)
@@ -118,6 +118,6 @@ func (s *Service) putTemp(ctx *gin.Context) {
 
 func (s *Service) removeTemp(c *gin.Context) {
 	u := c.Param("uuid")
-	_ = os.Remove(withTemp(u + ".tmp"))
-	_ = os.Remove(withTemp(u + ".json"))
+	_ = os.Remove(withTemp(u + extTemp))
+	_ = os.Remove(withTemp(u + extInfo))
 }
