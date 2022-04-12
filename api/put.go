@@ -3,7 +3,8 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"io"
-	"synod/stream"
+	"synod/discovery"
+	"synod/rs"
 	"synod/util"
 	"synod/util/logx"
 	"synod/util/render"
@@ -50,27 +51,27 @@ func (s *Service) doPut(reader io.Reader, hash string, size int64) error {
 		return nil
 	}
 
-	peer := s.subscriber.PickPeer("storage", hash)
+	peers := s.subscriber.ChoosePeers("storage", rs.TotalShards, discovery.EmptyExcludes())
 
-	if peer == "" {
-		return ErrNoPeer
+	if len(peers) != rs.TotalShards {
+		return ErrNotEnoughPeers
 	}
 
-	tmp, err := stream.NewTemp(peer, hash, size)
+	uploader, err := rs.NewUploader(peers, hash, size)
 
 	if err != nil {
 		return err
 	}
 
-	calculated := util.SumHash(io.TeeReader(reader, tmp))
+	calculated := util.SumHash(io.TeeReader(reader, uploader))
 	logx.Debugw("check hash", "expected", hash, "calculated", calculated)
 
 	if hash != calculated {
-		tmp.Commit(false)
+		uploader.Commit(false)
 		return ErrHashCheckFail
 	}
 
-	tmp.Commit(true)
+	uploader.Commit(true)
 
 	return nil
 }

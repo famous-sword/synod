@@ -11,11 +11,11 @@ var DefaultReplicas = 11
 // container store service information of a service
 // every server has each container
 type container struct {
-	// service names
+	// service names, mainly for remove
 	keys []string
 	// service addr
 	values []string
-	// index of service name
+	// index of service name, mainly for remove
 	indexes map[string]int
 	// current index
 	cursor int
@@ -73,6 +73,10 @@ func (c *container) remove(name string) {
 
 func (c *container) next(key string) string {
 	return c.balancer.Get(key)
+}
+
+func (c *container) all() []string {
+	return c.values
 }
 
 // listenUpdates when service changed, load balancer reload

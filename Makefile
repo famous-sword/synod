@@ -9,6 +9,9 @@ output = -o=synod
 build:
 	CGO_ENABLED=0 go build ${ldflags} ${gcflags} ${output} ${target}
 
+image:
+	docker build -t synod .
+
 clean:
 	rm -rf var/disk/*
 	rm -rf var/temp/*

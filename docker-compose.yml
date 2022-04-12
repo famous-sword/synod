@@ -1,0 +1,7 @@
+version: '3'
+services:
+  api:
+    container_name: synod-api
+    image: synod
+    ports:
+      - "5555:5555"

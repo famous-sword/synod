@@ -4,6 +4,7 @@ import (
 	"context"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	etcd "go.etcd.io/etcd/client/v3"
+	"math/rand"
 	"synod/util/logx"
 )
 
@@ -69,7 +70,36 @@ func (s *Subscriber) subscribe(name string) error {
 	return nil
 }
 
-// PickPeer select one peer from multiple peers
+// ChoosePeers select many peers by random
+// name: choose from subscribed service
+// n: how many you want to choose
+// excludes: what can't be selected
+func (s *Subscriber) ChoosePeers(name string, n int, excludes Excludes) (list []string) {
+	candidates := make([]string, 0)
+	peers := s.mustGetEndpoint(name).all()
+
+	for _, peer := range peers {
+		if !excludes.In(peer) {
+			candidates = append(candidates, peer)
+		}
+	}
+
+	length := len(candidates)
+
+	if length < n {
+		return list
+	}
+
+	p := rand.Perm(length)
+
+	for i := 0; i < n; i++ {
+		list = append(list, candidates[p[i]])
+	}
+
+	return list
+}
+
+// PickPeer select one peer by load balancer
 func (s *Subscriber) PickPeer(name, key string) string {
 	if _, ok := s.endpoints[name]; !ok {
 		return ""
@@ -84,6 +114,14 @@ func (s *Subscriber) Unsubscribe() error {
 
 func (s *Subscriber) Health() string {
 	return ""
+}
+
+func (s *Subscriber) mustGetEndpoint(name string) *container {
+	if _, ok := s.endpoints[name]; !ok {
+		s.endpoints[name] = newContainer()
+	}
+
+	return s.endpoints[name]
 }
 
 // listen to service online or offline
@@ -110,19 +148,11 @@ func (s *Subscriber) listen(name string) {
 }
 
 func (s *Subscriber) addNode(name, key, addr string) {
-	if _, ok := s.endpoints[name]; !ok {
-		s.endpoints[name] = newContainer()
-	}
-
-	s.endpoints[name].add(key, addr)
+	s.mustGetEndpoint(name).add(key, addr)
 	s.online++
 }
 
 func (s *Subscriber) removeNode(name, key string) {
-	if _, ok := s.endpoints[name]; !ok {
-		s.endpoints[name] = newContainer()
-	}
-
-	s.endpoints[name].remove(key)
+	s.mustGetEndpoint(name).remove(key)
 	s.offline++
 }
