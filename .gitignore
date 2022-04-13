@@ -23,4 +23,4 @@ go.work
 .idea
 .DS_Store
 /var
-!/var/config.yml
+!/var/synod.yml

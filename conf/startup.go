@@ -1,16 +1,56 @@
 package conf
 
 import (
+	"fmt"
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+	"os"
 	"os/user"
+	"path/filepath"
 )
 
-func Startup() error {
-	return loadDefaultConfig()
+var (
+	ErrMustYaml       = errors.New("configuration file must be in YAML")
+	ErrConfigNotFound = errors.New("config file not found")
+)
+
+func Startup(config string) error {
+	if config == "" {
+		return scanConfigAtDefaultPaths()
+	}
+
+	return loadConfigFrom(config)
 }
 
-func loadDefaultConfig() error {
-	viper.SetConfigName("config.yml")
+func loadConfigFrom(config string) error {
+	real, err := filepath.Abs(config)
+
+	fmt.Println("real: ", real)
+
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(real); errors.Is(err, os.ErrNotExist) {
+		return ErrConfigNotFound
+	}
+
+	ext := filepath.Ext(real)
+
+	fmt.Println("ext=", ext)
+
+	if ext != ".yml" && ext != ".yaml" {
+		return ErrMustYaml
+	}
+
+	viper.SetConfigFile(real)
+
+	return viper.ReadInConfig()
+}
+
+func scanConfigAtDefaultPaths() error {
+	viper.SetConfigName("synod.yml")
+
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./var/")
 	viper.AddConfigPath("var/")
@@ -22,11 +62,5 @@ func loadDefaultConfig() error {
 		viper.AddConfigPath(current.HomeDir)
 	}
 
-	err = viper.ReadInConfig()
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return viper.ReadInConfig()
 }

@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
 	"synod/api"
-	"synod/conf"
 	"synod/storage"
 	"synod/util/logx"
 	"syscall"
@@ -14,37 +12,20 @@ import (
 
 func RunCommand() *cobra.Command {
 	runner := &cobra.Command{
-		Use:   "run [server]",
-		Short: "run a service",
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-			if err = conf.Startup(); err != nil {
-				return err
-			}
-
-			if err = logx.Setup(); err != nil {
-				return err
-			}
-
-			if conf.Bool("app.debug") {
-				gin.SetMode(gin.DebugMode)
-			} else {
-				gin.SetMode(gin.ReleaseMode)
-			}
-
-			return nil
-		},
+		Use:              "run [server]",
+		Short:            "run a service",
+		TraverseChildren: true,
 	}
 
-	runner.AddCommand(APICommand(), StorageCommand())
+	runner.AddCommand(newAPICommand(), newStorageCommand())
 
 	return runner
 }
 
-func APICommand() *cobra.Command {
+func newAPICommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "api",
-		Short: "run api service",
+		Short: "start a api sever",
 		Run: func(cmd *cobra.Command, args []string) {
 			quit := make(chan os.Signal)
 			signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -65,10 +46,10 @@ func APICommand() *cobra.Command {
 	}
 }
 
-func StorageCommand() *cobra.Command {
+func newStorageCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "storage",
-		Short: "run storage service",
+		Short: "start a storage server",
 		Run: func(cmd *cobra.Command, args []string) {
 			quit := make(chan os.Signal)
 			signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)

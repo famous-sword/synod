@@ -59,5 +59,7 @@ func Fatalw(msg string, fields ...interface{}) {
 }
 
 func Flush() {
-	DefaultLogger.Flush()
+	if DefaultLogger != nil {
+		DefaultLogger.Flush()
+	}
 }
