@@ -1,7 +1,6 @@
 package conf
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"os"
@@ -25,8 +24,6 @@ func Startup(config string) error {
 func loadConfigFrom(config string) error {
 	real, err := filepath.Abs(config)
 
-	fmt.Println("real: ", real)
-
 	if err != nil {
 		return err
 	}
@@ -36,8 +33,6 @@ func loadConfigFrom(config string) error {
 	}
 
 	ext := filepath.Ext(real)
-
-	fmt.Println("ext=", ext)
 
 	if ext != ".yml" && ext != ".yaml" {
 		return ErrMustYaml
