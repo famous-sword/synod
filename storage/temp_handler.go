@@ -10,26 +10,26 @@ import (
 	"synod/util/render"
 )
 
-func (s *Service) createTemp(ctx *gin.Context) {
+func (s *Service) createTemp(c *gin.Context) {
 	u, _ := uuid.NewUUID()
-	name := ctx.Param("name")
-	size, err := strconv.ParseInt(ctx.GetHeader("size"), 0, 64)
+	name := c.Param("name")
+	size, err := strconv.ParseInt(c.GetHeader("size"), 0, 64)
 
 	if err != nil {
-		render.OfError(err).To(ctx)
+		render.OfError(err).To(c)
 		return
 	}
 
 	tmp := &Temp{Uuid: u.String(), Name: name, Size: size}
 
 	if err = tmp.saveInfo(); err != nil {
-		render.OfError(err).To(ctx)
+		render.OfError(err).To(c)
 		return
 	}
 
-	_, _ = os.Create(TempDir(tmp.Uuid + extTemp))
+	_, _ = os.Create(TempPath(tmp.Uuid + extTemp))
 
-	render.Success().With(u.String()).To(ctx)
+	render.Success().With(u.String()).To(c)
 }
 
 func (s *Service) patchTemp(ctx *gin.Context) {
@@ -42,7 +42,7 @@ func (s *Service) patchTemp(ctx *gin.Context) {
 		return
 	}
 
-	tempFileName := TempDir(u + extTemp)
+	tempFileName := TempPath(u + extTemp)
 
 	f, err := os.OpenFile(tempFileName, os.O_WRONLY|os.O_APPEND, 0)
 
@@ -73,28 +73,28 @@ func (s *Service) patchTemp(ctx *gin.Context) {
 	// size not match, remove all file
 	if info.Size() > origin.Size {
 		_ = os.Remove(tempFileName)
-		_ = os.Remove(TempDir(u + extInfo))
+		_ = os.Remove(TempPath(u + extInfo))
 	}
 
 	render.Success().To(ctx)
 }
 
-func (s *Service) putTemp(ctx *gin.Context) {
-	u := ctx.Param("uuid")
+func (s *Service) putTemp(c *gin.Context) {
+	u := c.Param("uuid")
 
 	info, err := ofUuid(u)
 
 	if err != nil {
-		render.OfError(err).To(ctx)
+		render.OfError(err).To(c)
 		return
 	}
 
-	tmp := TempDir(u + extTemp)
+	tmp := TempPath(u + extTemp)
 
 	f, err := os.Open(tmp)
 
 	if err != nil {
-		render.OfError(err).To(ctx)
+		render.OfError(err).To(c)
 		return
 	}
 
@@ -102,14 +102,14 @@ func (s *Service) putTemp(ctx *gin.Context) {
 	stat, err := f.Stat()
 
 	if err != nil {
-		render.OfError(err).To(ctx)
+		render.OfError(err).To(c)
 		return
 	}
 
-	_ = os.Remove(TempDir(u + extInfo))
+	_ = os.Remove(TempPath(u + extInfo))
 	if info.Size != stat.Size() {
 		_ = os.Remove(tmp)
-		render.Fail().WithMessage("size not match").To(ctx)
+		render.Fail().WithMessage("size not match").To(c)
 		return
 	}
 
@@ -118,6 +118,6 @@ func (s *Service) putTemp(ctx *gin.Context) {
 
 func (s *Service) removeTemp(c *gin.Context) {
 	u := c.Param("uuid")
-	_ = os.Remove(TempDir(u + extTemp))
-	_ = os.Remove(TempDir(u + extInfo))
+	_ = os.Remove(TempPath(u + extTemp))
+	_ = os.Remove(TempPath(u + extInfo))
 }

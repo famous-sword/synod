@@ -1,51 +1,49 @@
 package conf
 
-import "github.com/spf13/viper"
-
 func String(key string) string {
-	return viper.GetString(key)
+	return repository.String(key)
 }
 
 func StringSlice(key string) []string {
-	return viper.GetStringSlice(key)
+	return repository.StringSlice(key)
 }
 
 func IntSlice(key string) []int {
-	return viper.GetIntSlice(key)
+	return repository.IntSlice(key)
 }
 
 func Integer(key string) int {
-	return viper.GetInt(key)
+	return repository.Integer(key)
 }
 
 func Bool(key string) bool {
-	return viper.GetBool(key)
+	return repository.Bool(key)
 }
 
 func Int32(key string) int32 {
-	return viper.GetInt32(key)
+	return repository.Int32(key)
 }
 
 func Int64(key string) int64 {
-	return viper.GetInt64(key)
+	return repository.Int64(key)
 }
 
 func Uint(key string) uint {
-	return viper.GetUint(key)
+	return repository.Uint(key)
 }
 
 func Uint32(key string) uint32 {
-	return viper.GetUint32(key)
+	return repository.Uint32(key)
 }
 
 func Uint64(key string) uint64 {
-	return viper.GetUint64(key)
+	return repository.Uint64(key)
 }
 
 func Float(key string) float64 {
-	return viper.GetFloat64(key)
+	return repository.Float(key)
 }
 
 func Set(key string, value interface{}) {
-	viper.Set(key, value)
+	repository.Set(key, value)
 }

@@ -17,7 +17,7 @@ type Logger struct {
 	sugar   *zap.SugaredLogger
 }
 
-func Setup() error {
+func Startup() error {
 	logger, err := NewLogger()
 
 	if err != nil {

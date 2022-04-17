@@ -3,7 +3,11 @@ package storage
 import (
 	"encoding/json"
 	"io/ioutil"
+	"net/url"
 	"os"
+	"strconv"
+	"strings"
+	"synod/util"
 )
 
 const (
@@ -20,7 +24,7 @@ type Temp struct {
 func ofUuid(u string) (*Temp, error) {
 	name := u + extInfo
 
-	f, err := os.Open(TempDir(name))
+	f, err := os.Open(TempPath(name))
 
 	if err != nil {
 		return nil, err
@@ -44,7 +48,7 @@ func ofUuid(u string) (*Temp, error) {
 func (t *Temp) saveInfo() error {
 	originFileName := t.Uuid + extInfo
 
-	f, err := os.Create(TempDir(originFileName))
+	f, err := os.Create(TempPath(originFileName))
 
 	if err != nil {
 		return err
@@ -67,6 +71,25 @@ func (t *Temp) saveInfo() error {
 	return nil
 }
 
+func (t *Temp) hash() string {
+	segments := strings.Split(t.Name, ".")
+
+	return segments[0]
+}
+
+func (t *Temp) id() int {
+	segments := strings.Split(t.Name, ".")
+	id, _ := strconv.Atoi(segments[1])
+
+	return id
+}
+
 func commit(tempName string, tmp *Temp) {
-	_ = os.Rename(tempName, Workdir(tmp.Name))
+	file, _ := os.Open(tempName)
+	tempHash := url.PathEscape(util.SumHash(file))
+	_ = file.Close()
+
+	_ = os.Rename(tempName, DataPath(tmp.Name+"."+tempHash))
+
+	locator.AddTemp(tmp.hash(), tmp.id())
 }

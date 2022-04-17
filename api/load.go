@@ -5,8 +5,9 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"synod/discovery"
 	"synod/metadata"
-	"synod/stream"
+	"synod/rs"
 	"synod/util/render"
 )
 
@@ -48,23 +49,36 @@ func (s *Service) load(ctx *gin.Context) {
 		return
 	}
 
-	peer := s.subscriber.PickPeer("storage", meta.Hash)
+	locates := s.locate(meta.Hash)
 
-	if peer == "" {
-		render.OfError(ErrNoPeer).To(ctx)
+	if len(locates) < rs.NumDataShard {
+		render.Fail().WithMessage("locate fail").To(ctx)
 		return
 	}
 
-	copier, err := stream.NewCopier(peer, meta.Hash)
+	var servers []string
+
+	if len(servers) != rs.TotalShards {
+		servers = s.subscriber.ChoosePeers(
+			"storage",
+			rs.TotalShards-len(locates),
+			discovery.LoadExcludes(locates),
+		)
+	}
+
+	stream, err := rs.NewDownloader(locates, servers, meta.Hash, meta.Size)
 
 	if err != nil {
 		render.OfError(err).To(ctx)
 		return
 	}
 
-	_, err = io.Copy(ctx.Writer, copier)
+	_, err = io.Copy(ctx.Writer, stream)
 
 	if err != nil {
 		render.OfError(err).To(ctx)
+		return
 	}
+
+	stream.Close()
 }

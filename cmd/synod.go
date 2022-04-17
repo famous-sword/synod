@@ -75,7 +75,7 @@ func (s *Synod) setups() {
 		fmt.Printf("setup config error: %v\n", err)
 		os.Exit(1)
 	}
-	if err = logx.Setup(); err != nil {
+	if err = logx.Startup(); err != nil {
 		fmt.Printf("setup logx error: %v\n", err)
 		os.Exit(1)
 	}

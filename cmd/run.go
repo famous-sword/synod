@@ -27,20 +27,19 @@ func newAPICommand() *cobra.Command {
 		Use:   "api",
 		Short: "start a api sever",
 		Run: func(cmd *cobra.Command, args []string) {
+			svc := api.New()
 			quit := make(chan os.Signal)
 			signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-			svc := api.New()
 			go func() {
 				err := svc.Run()
-
 				if err != nil {
-					quit <- syscall.SIGINT
 					logx.Errorw("api service run error", "error", err)
 				}
 			}()
 
 			<-quit
+
 			svc.Shutdown()
 		},
 	}
@@ -51,16 +50,14 @@ func newStorageCommand() *cobra.Command {
 		Use:   "storage",
 		Short: "start a storage server",
 		Run: func(cmd *cobra.Command, args []string) {
+			svc := storage.New()
 			quit := make(chan os.Signal)
 			signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
-			svc := storage.New()
 
 			go func() {
 				err := svc.Run()
 
 				if err != nil {
-					quit <- syscall.SIGINT
 					logx.Errorw("storage service run error", "error", err)
 				}
 			}()

@@ -6,7 +6,7 @@ func EmptyExcludes() Excludes {
 	return Excludes{}
 }
 
-func LoadExcludes(peers []string) Excludes {
+func LoadExcludes(peers map[int]string) Excludes {
 	e := EmptyExcludes()
 
 	for i, peer := range peers {

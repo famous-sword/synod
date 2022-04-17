@@ -18,8 +18,10 @@ COPY --from=builder /synod /
 COPY --from=builder /synod-src/var /var
 COPY --from=builder /usr/local/go/lib/time/zoneinfo.zip /usr/local/go/lib/time/zoneinfo.zip
 
-ENV PORT=5566
+ENV API_PORT=5555
+ENV STORAGE_PORT=5566
 
 EXPOSE ${PORT}
+EXPOSE ${STORAGE_PORT}
 
 CMD ["/synod", "run", "api"]

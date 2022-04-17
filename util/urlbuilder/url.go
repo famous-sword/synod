@@ -35,6 +35,7 @@ func New() *UrlBuilder {
 	return u
 }
 
+// Of create an url builder from a base url
 func Of(base string) *UrlBuilder {
 	u := newBuilder()
 	u.mode = ModeParse
@@ -43,6 +44,7 @@ func Of(base string) *UrlBuilder {
 	return u
 }
 
+// Join create an url builder by multiple url parts
 func Join(segments ...string) *UrlBuilder {
 	u := newBuilder()
 	u.mode = ModeParse
@@ -58,23 +60,35 @@ func Join(segments ...string) *UrlBuilder {
 	return u
 }
 
+// Http create an url builder start of a http schema
+func Http() *UrlBuilder {
+	return newBuilder().Schema("http")
+}
+
+// Https create an url builder start of a https schema
+func Https() *UrlBuilder {
+	return newBuilder().Schema("https")
+}
+
 func newBuilder() *UrlBuilder {
 	return &UrlBuilder{
 		queries: url.Values{},
 	}
 }
 
+// AddQuery app a parameter to query
 func (ub *UrlBuilder) AddQuery(key, value string) *UrlBuilder {
 	ub.queries.Add(key, value)
 
 	return ub
 }
 
+// Schema if a wrong schema is inputted, https will default
 func (ub *UrlBuilder) Schema(schema string) *UrlBuilder {
 	schema = strings.Trim(schema, "/")
 
 	if !strings.HasPrefix(schema, "http") {
-		panic("invalid schema")
+		schema = "https"
 	}
 
 	ub.schema = schema

@@ -29,9 +29,12 @@ func New() *Service {
 }
 
 func (s *Service) Run() error {
+	locator = NewLocator()
+	locator.LoadToTable()
+
 	handler := gin.Default()
 	handler.GET("/objects/:name", s.load)
-	handler.GET("/locates/:hash", s.exists)
+	handler.GET("/locates/:hash", s.locate)
 
 	handler.POST("/tmp/:name", s.createTemp)
 	handler.PATCH("/tmp/:uuid", s.patchTemp)
@@ -73,12 +76,12 @@ func (s *Service) Shutdown() {
 	}
 }
 
-// Workdir generate full path in work dir
-func Workdir(name string) string {
-	return filepath.Join(conf.String("storage.workdir"), name)
+// DataPath generate full path in work dir
+func DataPath(name string) string {
+	return filepath.Join(conf.String("storage.data_dir"), name)
 }
 
-// TempDir generate full path in temp dir
-func TempDir(name string) string {
-	return filepath.Join(conf.String("storage.temp"), name)
+// TempPath generate full path in temp dir
+func TempPath(name string) string {
+	return filepath.Join(conf.String("storage.temp_dir"), name)
 }

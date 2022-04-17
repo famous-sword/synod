@@ -2,7 +2,6 @@ package discovery
 
 import (
 	etcd "go.etcd.io/etcd/client/v3"
-	"log"
 	"sync"
 	"synod/conf"
 	"synod/util/logx"
@@ -26,7 +25,7 @@ func Registry() *etcd.Client {
 		})
 
 		if err != nil {
-			log.Fatalln(err)
+			logx.Errorw("create etcd client", "error", err)
 		}
 
 		client = cli

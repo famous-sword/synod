@@ -2,35 +2,29 @@ package api
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/valyala/fastjson"
 	"io/ioutil"
 	"net/http"
-	"synod/util/render"
+	"synod/discovery"
+	"synod/rs"
+	"synod/util/logx"
 	"synod/util/urlbuilder"
 )
 
 // confirm object in which storage service
-func (s *Service) locate(ctx *gin.Context) {
-	hash := ctx.Param("hash")
+func (s *Service) locate(hash string) rs.Locates {
+	peers := s.subscriber.ChoosePeers("storage", rs.TotalShards, discovery.EmptyExcludes())
+	locates := make(map[int]string)
 
-	if hash == "" {
-		render.Fail().WithMessage("hash is invalid").To(ctx)
-		return
+	for _, peer := range peers {
+		id := getIdFromStorage(peer, hash)
+
+		if id != -1 {
+			locates[id] = peer
+		}
 	}
 
-	exists, err := s.exists(hash)
-
-	if err != nil {
-		render.OfError(err).To(ctx)
-		return
-	}
-
-	r := gin.H{
-		"exists": exists,
-	}
-
-	render.Success().With(r).To(ctx)
+	return locates
 }
 
 func (s *Service) exists(hash string) (bool, error) {
@@ -49,7 +43,7 @@ func (s *Service) exists(hash string) (bool, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return false, fmt.Errorf("service: %s responsed %d", url, response.StatusCode)
+		return false, fmt.Errorf("%s responsed %d", url, response.StatusCode)
 	}
 
 	bytes, err := ioutil.ReadAll(response.Body)
@@ -59,4 +53,18 @@ func (s *Service) exists(hash string) (bool, error) {
 	}
 
 	return fastjson.GetBool(bytes, "data", "exists"), nil
+}
+
+func getIdFromStorage(peer, hash string) int {
+	b := urlbuilder.Join(peer, "locates", hash)
+	response, err := http.Get(b.Build())
+
+	if err != nil {
+		logx.Errorw("get object id", "error", err)
+		return -1
+	}
+
+	bytes, _ := ioutil.ReadAll(response.Body)
+
+	return fastjson.GetInt(bytes, "data")
 }

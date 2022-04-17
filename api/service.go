@@ -49,9 +49,7 @@ func (s *Service) Run() error {
 	handler.GET("/objects/:name", s.load)
 	handler.PUT("/objects/:name", s.put)
 	handler.DELETE("/objects/:name", s.versions)
-
 	handler.GET("/versions/:name", s.versions)
-	handler.GET("/locates/:hash", s.locate)
 
 	s.Server = &http.Server{
 		Handler: handler,

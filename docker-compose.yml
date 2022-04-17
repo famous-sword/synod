@@ -4,4 +4,108 @@ services:
     container_name: synod-api
     image: synod
     ports:
-      - "5555:5555"
+      - '5555:5555'
+    environment:
+      - SYNOD_APP_ID=0
+      - SYNOD_API_ADDR=:5555
+      - SYNOD_STORAGE_ADDR=:5566
+    networks:
+      - synod-inner
+    depends_on:
+      - etcd
+      - es
+  store1:
+    container_name: synod-store-1
+    image: synod
+    environment:
+      - SYNOD_APP_ID=1
+      - SYNOD_API_ADDR=:5555
+      - SYNOD_STORAGE_ADDR=:5566
+    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'storage' ]
+    networks:
+      - synod-inner
+    depends_on:
+      - etcd
+      - es
+  store2:
+    container_name: synod-store-2
+    image: synod
+    environment:
+      - SYNOD_APP_ID=2
+      - SYNOD_API_ADDR=:5555
+      - SYNOD_STORAGE_ADDR=:5566
+    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'storage' ]
+    networks:
+      - synod-inner
+    depends_on:
+      - etcd
+      - es
+  store3:
+    container_name: synod-store-3
+    image: synod
+    environment:
+      - SYNOD_APP_ID=3
+      - SYNOD_API_ADDR=:5555
+      - SYNOD_STORAGE_ADDR=:5566
+    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'storage' ]
+    networks:
+      - synod-inner
+    depends_on:
+      - etcd
+      - es
+  store4:
+    container_name: synod-store-4
+    image: synod
+    environment:
+      - SYNOD_APP_ID=4
+      - SYNOD_API_ADDR=:5555
+      - SYNOD_STORAGE_ADDR=:5566
+    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'storage' ]
+    networks:
+      - synod-inner
+    depends_on:
+      - etcd
+      - es
+  store5:
+    container_name: synod-store-5
+    image: synod
+    environment:
+      - SYNOD_APP_ID=5
+      - SYNOD_API_ADDR=:5555
+      - SYNOD_STORAGE_ADDR=:5566
+    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'storage' ]
+    networks:
+      - synod-inner
+    depends_on:
+      - etcd
+      - es
+  store6:
+    container_name: synod-store-6
+    image: synod
+    environment:
+      - SYNOD_APP_ID=6
+      - SYNOD_API_ADDR=:5555
+      - SYNOD_STORAGE_ADDR=:5566
+    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'storage' ]
+    networks:
+      - synod-inner
+    depends_on:
+      - etcd
+      - es
+  es:
+    container_name: synod-es
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+    environment:
+      - discovery.type=single-node
+    networks:
+      - synod-inner
+  etcd:
+    container_name: synod-etcd
+    image: bitnami/etcd:3
+    environment:
+      - ETCD_NAME=node1
+      - ALLOW_NONE_AUTHENTICATION=yes
+    networks:
+      - synod-inner
+networks:
+  synod-inner:
