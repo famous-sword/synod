@@ -3,6 +3,7 @@ module synod
 go 1.18
 
 require (
+	github.com/bits-and-blooms/bloom/v3 v3.2.0
 	github.com/elastic/go-elasticsearch/v7 v7.17.1
 	github.com/gin-gonic/gin v1.7.7
 	github.com/google/uuid v1.3.0
@@ -18,7 +19,6 @@ require (
 
 require (
 	github.com/bits-and-blooms/bitset v1.2.2 // indirect
-	github.com/bits-and-blooms/bloom/v3 v3.2.0 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
