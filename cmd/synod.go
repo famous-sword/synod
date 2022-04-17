@@ -34,10 +34,10 @@ func NewSynod() *Synod {
 
 func (s *Synod) Run() {
 	flag.Parse()
-
-	s.addSubCommand(RunCommand())
-
-	s.bootstrapOrExit()
+	s.startupRootCommand()
+	s.startupFeatureCommands()
+	s.startupFlagParser()
+	s.setupCoreComponentsOrStop()
 
 	if err := s.rootCommand.Execute(); err != nil {
 		logx.Fatalw("synod run error", "message", err)
@@ -49,15 +49,22 @@ func (s *Synod) Shutdown() {
 	logx.Flush()
 }
 
-func (s *Synod) bootstrapOrExit() {
+func (s *Synod) startupRootCommand() {
 	s.rootCommand = &cobra.Command{
 		Use:              s.name,
 		Version:          s.version,
 		Short:            s.intro,
 		TraverseChildren: true,
 	}
+}
+
+func (s *Synod) startupFeatureCommands() {
+	s.addSubCommand(RunCommand())
 
 	s.rootCommand.AddCommand(s.subCommands...)
+}
+
+func (s *Synod) startupFlagParser() {
 	s.rootCommand.PersistentFlags().StringVarP(
 		&s.configFile,
 		"config",
@@ -65,11 +72,9 @@ func (s *Synod) bootstrapOrExit() {
 		"",
 		"set config file",
 	)
-
-	s.setups()
 }
 
-func (s *Synod) setups() {
+func (s *Synod) setupCoreComponentsOrStop() {
 	var err error
 	if err = conf.Startup(*configFile); err != nil {
 		fmt.Printf("setup config error: %v\n", err)
