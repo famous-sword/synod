@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"synod/api"
-	"synod/storage"
+	"synod/data"
 	"synod/util/logx"
 	"syscall"
 )
@@ -47,10 +47,10 @@ func newAPICommand() *cobra.Command {
 
 func newStorageCommand() *cobra.Command {
 	return &cobra.Command{
-		Use:   "storage",
+		Use:   "data",
 		Short: "start a storage server",
 		Run: func(cmd *cobra.Command, args []string) {
-			svc := storage.New()
+			svc := data.New()
 			quit := make(chan os.Signal)
 			signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 

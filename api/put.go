@@ -51,7 +51,7 @@ func (s *Service) doPut(reader io.Reader, hash string, size int64) error {
 		return nil
 	}
 
-	peers := s.subscriber.ChoosePeers("storage", rs.TotalShards, discovery.EmptyExcludes())
+	peers := s.subscriber.ChoosePeers("data", rs.TotalShards, discovery.EmptyExcludes())
 
 	if len(peers) != rs.TotalShards {
 		return ErrNotEnoughPeers

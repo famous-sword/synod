@@ -1,4 +1,4 @@
-package storage
+package data
 
 import (
 	"github.com/gin-gonic/gin"
@@ -23,8 +23,8 @@ type Service struct {
 
 func New() *Service {
 	return &Service{
-		Name: "storage",
-		Addr: conf.String("storage.addr"),
+		Name: "data",
+		Addr: conf.String("data.addr"),
 	}
 }
 
@@ -76,12 +76,12 @@ func (s *Service) Shutdown() {
 	}
 }
 
-// DataPath generate full path in work dir
-func DataPath(name string) string {
-	return filepath.Join(conf.String("storage.data_dir"), name)
+// Disk generate full path in work dir
+func Disk(name string) string {
+	return filepath.Join(conf.String("data.data_dir"), name)
 }
 
 // TempPath generate full path in temp dir
 func TempPath(name string) string {
-	return filepath.Join(conf.String("storage.temp_dir"), name)
+	return filepath.Join(conf.String("data.temp_dir"), name)
 }

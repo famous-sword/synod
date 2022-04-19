@@ -1,4 +1,4 @@
-package storage
+package data
 
 import (
 	"crypto/sha256"
@@ -48,7 +48,7 @@ func (s *Service) exists(c *gin.Context) {
 }
 
 func getFilePath(name string) string {
-	files, _ := filepath.Glob(DataPath(name + ".*"))
+	files, _ := filepath.Glob(Disk(name + ".*"))
 
 	if len(files) != 1 {
 		return ""

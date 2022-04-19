@@ -13,7 +13,7 @@ import (
 
 // confirm object in which storage service
 func (s *Service) locate(hash string) rs.Locates {
-	peers := s.subscriber.ChoosePeers("storage", rs.TotalShards, discovery.EmptyExcludes())
+	peers := s.subscriber.ChoosePeers("data", rs.TotalShards, discovery.EmptyExcludes())
 	locates := make(map[int]string)
 
 	for _, peer := range peers {
@@ -28,7 +28,7 @@ func (s *Service) locate(hash string) rs.Locates {
 }
 
 func (s *Service) exists(hash string) (bool, error) {
-	addr := s.subscriber.PickPeer("storage", hash)
+	addr := s.subscriber.PickPeer("data", hash)
 
 	if addr == "" {
 		return false, ErrNoPeer

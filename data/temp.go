@@ -1,4 +1,4 @@
-package storage
+package data
 
 import (
 	"encoding/json"
@@ -89,7 +89,7 @@ func commit(tempName string, tmp *Temp) {
 	tempHash := url.PathEscape(util.SumHash(file))
 	_ = file.Close()
 
-	_ = os.Rename(tempName, DataPath(tmp.Name+"."+tempHash))
+	_ = os.Rename(tempName, Disk(tmp.Name+"."+tempHash))
 
 	locator.AddTemp(tmp.hash(), tmp.id())
 }

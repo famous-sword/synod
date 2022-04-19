@@ -24,16 +24,13 @@ else
     startStorage()
 fi
 
-
-
-
-startAPI() {
+startAPIServer() {
     export SYNOD_APP_ID=0
     export SYNOD_API_ADDR=":5555"
     go run main.go run api
 }
 
-startStorage() {
+startDataServer() {
     if [[ ! "$1" =~ ^-?[0-9]+$ ]]; then
       echo "you must input a number"
       exit 1
@@ -49,7 +46,7 @@ startStorage() {
 
     export SYNOD_APP_ID="$1"
     export SYNOD_API_ADDR=":5555"
-    export SYNOD_STORAGE_ADDR=":556$1"
+    export SYNOD_DATA_ADDR=":556$1"
     export SYNOD_DATA_DIR="var/disk/$1"
     export SYNOD_TEMP_DIR="var/temp/$1"
 

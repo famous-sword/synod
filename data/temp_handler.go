@@ -1,4 +1,4 @@
-package storage
+package data
 
 import (
 	"github.com/gin-gonic/gin"

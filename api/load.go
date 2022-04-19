@@ -60,7 +60,7 @@ func (s *Service) load(ctx *gin.Context) {
 
 	if len(servers) != rs.TotalShards {
 		servers = s.subscriber.ChoosePeers(
-			"storage",
+			"data",
 			rs.TotalShards-len(locates),
 			discovery.LoadExcludes(locates),
 		)

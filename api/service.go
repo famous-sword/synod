@@ -67,7 +67,7 @@ func (s *Service) Run() error {
 		return err
 	}
 
-	s.subscriber = discovery.NewSubscriber("storage")
+	s.subscriber = discovery.NewSubscriber("data")
 	if err := s.subscriber.Subscribe(); err != nil {
 		return err
 	}

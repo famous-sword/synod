@@ -1,4 +1,4 @@
-package storage
+package data
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ func NewLocator() *Locator {
 }
 
 func (l *Locator) LoadToTable() {
-	files, err := filepath.Glob(DataPath("*"))
+	files, err := filepath.Glob(Disk("*"))
 
 	if err != nil {
 		logx.Errorw("glob error", "msg", err)
