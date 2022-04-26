@@ -33,7 +33,7 @@ func NewTemp(server, name string, size int64) (*Temp, error) {
 		return nil, err
 	}
 
-	bytes, err := ioutil.ReadAll(response.Body)
+	data, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
 		return nil, err
@@ -41,10 +41,12 @@ func NewTemp(server, name string, size int64) (*Temp, error) {
 
 	tmp := &Temp{
 		Server: server,
-		Uuid:   fastjson.GetString(bytes, "data"),
+		Uuid:   fastjson.GetString(data, "data"),
 	}
 
 	tmp.url = urlbuilder.Join(tmp.Server, "tmp", tmp.Uuid).Build()
+
+	_ = response.Body.Close()
 
 	return tmp, nil
 }
@@ -66,6 +68,8 @@ func (t *Temp) Write(p []byte) (n int, err error) {
 		return n, err
 	}
 
+	defer r.Body.Close()
+
 	if r.StatusCode != http.StatusOK {
 		return n, fmt.Errorf("storage service responsed: %d", r.StatusCode)
 	}
@@ -83,5 +87,9 @@ func (t *Temp) Commit(nice bool) {
 
 	request, _ := http.NewRequest(method, t.url, nil)
 	client := http.Client{}
-	_, _ = client.Do(request)
+	r, err := client.Do(request)
+
+	if err != nil {
+		_ = r.Body.Close()
+	}
 }

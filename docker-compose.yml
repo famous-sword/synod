@@ -7,86 +7,86 @@ services:
       - '5555:5555'
     environment:
       - SYNOD_APP_ID=0
-      - SYNOD_API_ADDR=:5555
-      - SYNOD_STORAGE_ADDR=:5566
+      - SYNOD_API_ADDR=127.0.0.1:5555
+      - SYNOD_DATA_ADDR=:5566
     networks:
       - synod-inner
     depends_on:
       - etcd
       - es
-  store1:
-    container_name: synod-store-1
+  data1:
+    container_name: synod-data-1
     image: synod
     environment:
       - SYNOD_APP_ID=1
       - SYNOD_API_ADDR=:5555
-      - SYNOD_STORAGE_ADDR=:5566
-    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'storage' ]
+      - SYNOD_DATA_ADDR=:5566
+    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'data' ]
     networks:
       - synod-inner
     depends_on:
       - etcd
       - es
-  store2:
-    container_name: synod-store-2
+  data2:
+    container_name: synod-data-2
     image: synod
     environment:
       - SYNOD_APP_ID=2
       - SYNOD_API_ADDR=:5555
-      - SYNOD_STORAGE_ADDR=:5566
-    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'storage' ]
+      - SYNOD_DATA_ADDR=:5566
+    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'data' ]
     networks:
       - synod-inner
     depends_on:
       - etcd
       - es
-  store3:
-    container_name: synod-store-3
+  data3:
+    container_name: synod-data-3
     image: synod
     environment:
       - SYNOD_APP_ID=3
       - SYNOD_API_ADDR=:5555
-      - SYNOD_STORAGE_ADDR=:5566
-    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'storage' ]
+      - SYNOD_DATA_ADDR=:5566
+    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'data' ]
     networks:
       - synod-inner
     depends_on:
       - etcd
       - es
-  store4:
-    container_name: synod-store-4
+  data4:
+    container_name: synod-data-4
     image: synod
     environment:
       - SYNOD_APP_ID=4
       - SYNOD_API_ADDR=:5555
-      - SYNOD_STORAGE_ADDR=:5566
-    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'storage' ]
+      - SYNOD_DATA_ADDR=:5566
+    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'data' ]
     networks:
       - synod-inner
     depends_on:
       - etcd
       - es
-  store5:
-    container_name: synod-store-5
+  data5:
+    container_name: synod-data-5
     image: synod
     environment:
       - SYNOD_APP_ID=5
       - SYNOD_API_ADDR=:5555
-      - SYNOD_STORAGE_ADDR=:5566
-    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'storage' ]
+      - SYNOD_DATA_ADDR=:5566
+    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'data' ]
     networks:
       - synod-inner
     depends_on:
       - etcd
       - es
-  store6:
-    container_name: synod-store-6
+  data6:
+    container_name: synod-data-6
     image: synod
     environment:
       - SYNOD_APP_ID=6
       - SYNOD_API_ADDR=:5555
-      - SYNOD_STORAGE_ADDR=:5566
-    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'storage' ]
+      - SYNOD_DATA_ADDR=:5566
+    command: [ '/synod', '-c', 'var/synod.docker.yml', 'run', 'data' ]
     networks:
       - synod-inner
     depends_on:

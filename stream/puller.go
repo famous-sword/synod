@@ -33,6 +33,8 @@ func NewPuller(server, name string) *Puller {
 			e = fmt.Errorf("storage server responsed status: %d", response.StatusCode)
 		}
 
+		_ = response.Body.Close()
+
 		err <- e
 	}()
 

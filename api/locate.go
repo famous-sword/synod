@@ -47,6 +47,7 @@ func (s *Service) exists(hash string) (bool, error) {
 	}
 
 	bytes, err := ioutil.ReadAll(response.Body)
+	_ = response.Body.Close()
 
 	if err != nil {
 		return false, err
@@ -65,6 +66,7 @@ func getIdFromStorage(peer, hash string) int {
 	}
 
 	bytes, _ := ioutil.ReadAll(response.Body)
+	_ = response.Body.Close()
 
 	return fastjson.GetInt(bytes, "data")
 }

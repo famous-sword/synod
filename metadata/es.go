@@ -60,11 +60,13 @@ func (c *ElasticMetaManager) Put(name string, version int, size int64, hash stri
 		OpType:     "create",
 	}
 
-	_, err = request.Do(context.Background(), c.client)
+	response, err := request.Do(context.Background(), c.client)
 
 	if err != nil {
 		return err
 	}
+
+	defer response.Body.Close()
 
 	return nil
 }
@@ -75,7 +77,11 @@ func (c *ElasticMetaManager) Remove(name string, version int) {
 		DocumentID: generateId(name, version),
 	}
 
-	_, _ = request.Do(context.Background(), c.client)
+	response, err := request.Do(context.Background(), c.client)
+
+	if err == nil {
+		response.Body.Close()
+	}
 }
 
 func (c *ElasticMetaManager) Versions(name string, from, size int) ([]Meta, error) {
@@ -100,6 +106,8 @@ func (c *ElasticMetaManager) Versions(name string, from, size int) ([]Meta, erro
 	if err != nil {
 		return nil, err
 	}
+
+	defer response.Body.Close()
 
 	if response.StatusCode == http.StatusNotFound {
 		return nil, ErrMetaNotFound
@@ -181,6 +189,8 @@ func (c *ElasticMetaManager) getMetaById(name string, version int) (meta Meta, e
 	if err != nil {
 		return
 	}
+
+	defer response.Body.Close()
 
 	if response.StatusCode == http.StatusNotFound {
 		err = ErrMetaNotFound

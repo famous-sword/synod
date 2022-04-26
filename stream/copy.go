@@ -31,6 +31,6 @@ func NewCopier(server, name string) (*Copier, error) {
 	return &Copier{reader: response.Body}, err
 }
 
-func (r *Copier) Read(b []byte) (n int, err error) {
-	return r.reader.Read(b)
+func (c *Copier) Read(b []byte) (n int, err error) {
+	return c.reader.Read(b)
 }
